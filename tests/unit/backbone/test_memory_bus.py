@@ -36,3 +36,35 @@ def test_in_memory_bus_implements_event_bus_protocol() -> None:
     from lens.backbone.memory_bus import InMemoryEventBus
 
     assert isinstance(InMemoryEventBus(), EventBus)
+
+
+async def test_producer_send_delivers_event_to_consumer_handler() -> None:
+    """An event published via producer.send reaches the consumer's handler."""
+    from lens.backbone.memory_bus import InMemoryEventBus
+
+    bus = InMemoryEventBus()
+    received: list[dict[str, Any]] = []
+
+    class _Handler:
+        async def handle(self, event: dict[str, Any]) -> None:
+            received.append(event)
+
+    consumer = bus.consumer("build.events", group_id="g", handler=_Handler())
+    producer = bus.producer("build.events")
+    await producer.start()
+
+    await producer.send(_sample_event())
+
+    run_task = asyncio.create_task(consumer.run())
+    # let the consumer drain the queue
+    for _ in range(20):
+        if received:
+            break
+        await asyncio.sleep(0.01)
+    await consumer.stop()
+    await run_task
+    await producer.stop()
+
+    assert len(received) == 1
+    assert received[0]["event_type"] == "NodeStarted"
+    assert received[0]["node_id"] == "n1"
