@@ -8,7 +8,7 @@ Spec references:
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 from pydantic import ValidationError
@@ -119,5 +119,16 @@ def test_envelope_rejects_extra_unknown_field() -> None:
     with pytest.raises(ValidationError) as exc_info:
         EventEnvelope(**payload)  # type: ignore[arg-type]
     assert "unexpected_field" in str(exc_info.value)
+
+
+def test_envelope_parses_iso8601_timestamp_with_z() -> None:
+    """`Z` suffix must parse as UTC."""
+    from lens.events.schema import EventEnvelope
+
+    payload = _valid_envelope_input()
+    payload["timestamp"] = "2024-04-24T10:00:00Z"
+    env = EventEnvelope(**payload)  # type: ignore[arg-type]
+    assert env.timestamp.tzinfo is not None
+    assert env.timestamp.utcoffset() == timedelta(0)
 
 
