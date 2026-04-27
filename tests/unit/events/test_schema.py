@@ -484,6 +484,16 @@ def test_flow_completed_accepts_any_exit_code(exit_code: int) -> None:
     assert evt.exit_code == exit_code
 
 
+def test_flow_completed_requires_duration_seconds() -> None:
+    from lens.events.schema import FlowCompleted
+
+    payload = _valid_flow_completed_input()
+    del payload["duration_seconds"]
+    with pytest.raises(ValidationError) as exc_info:
+        FlowCompleted(**payload)  # type: ignore[arg-type]
+    assert "duration_seconds" in str(exc_info.value)
+
+
 
 
 
