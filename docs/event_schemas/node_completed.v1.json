@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lens.tsmc/event_schemas/node_completed.v1.json",
+  "title": "NodeCompleted",
+  "description": "A node has finished execution. exit_code and duration_seconds carry the outcome.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_type",
+    "schema_version",
+    "event_id",
+    "timestamp",
+    "build_id",
+    "node_id",
+    "level",
+    "entity_id",
+    "exit_code",
+    "duration_seconds"
+  ],
+  "properties": {
+    "event_type": { "const": "NodeCompleted" },
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "build_id": { "type": "string" },
+    "parent_event_id": {
+      "oneOf": [
+        { "type": "string", "format": "uuid" },
+        { "type": "null" }
+      ]
+    },
+    "node_id": { "type": "string" },
+    "level": { "enum": ["build", "library", "flow", "pvt", "cell"] },
+    "entity_id": { "type": "string" },
+    "exit_code": { "type": "integer" },
+    "duration_seconds": { "type": "number", "minimum": 0 },
+    "output_hash": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    }
+  }
+}

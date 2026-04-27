@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lens.tsmc/event_schemas/flow_failed.v1.json",
+  "title": "FlowFailed",
+  "description": "A flow has failed. exit_code is loose (Q1); error_message is optional.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_type",
+    "schema_version",
+    "event_id",
+    "timestamp",
+    "build_id",
+    "level",
+    "entity_id",
+    "exit_code",
+    "duration_seconds"
+  ],
+  "properties": {
+    "event_type": { "const": "FlowFailed" },
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "build_id": { "type": "string" },
+    "parent_event_id": {
+      "oneOf": [
+        { "type": "string", "format": "uuid" },
+        { "type": "null" }
+      ]
+    },
+    "level": { "const": "flow" },
+    "entity_id": { "type": "string" },
+    "library": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    },
+    "owner": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    },
+    "exit_code": { "type": "integer" },
+    "duration_seconds": { "type": "number", "minimum": 0 },
+    "error_message": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    }
+  }
+}

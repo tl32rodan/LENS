@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lens.tsmc/event_schemas/flow_completed.v1.json",
+  "title": "FlowCompleted",
+  "description": "A flow has finished. exit_code is loose at schema level (decision Q1); projection enforces success/failure interpretation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_type",
+    "schema_version",
+    "event_id",
+    "timestamp",
+    "build_id",
+    "level",
+    "entity_id",
+    "exit_code",
+    "duration_seconds"
+  ],
+  "properties": {
+    "event_type": { "const": "FlowCompleted" },
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "build_id": { "type": "string" },
+    "parent_event_id": {
+      "oneOf": [
+        { "type": "string", "format": "uuid" },
+        { "type": "null" }
+      ]
+    },
+    "level": { "const": "flow" },
+    "entity_id": { "type": "string" },
+    "library": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    },
+    "owner": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    },
+    "exit_code": { "type": "integer" },
+    "duration_seconds": { "type": "number", "minimum": 0 }
+  }
+}
