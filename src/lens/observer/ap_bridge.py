@@ -12,18 +12,24 @@ the Protocol, not the parser.
 
 from __future__ import annotations
 
+import asyncio
 import csv
+import logging
+import uuid
 from collections.abc import Callable
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Protocol
 
+from lens.backbone.bus import EventProducer
 from lens.events.schema import (
     EventEnvelope,
     FlowCompleted,
     FlowFailed,
     FlowStarted,
 )
+
+logger = logging.getLogger(__name__)
 
 _TERMINAL_STATES = frozenset({"COMPLETED", "FAILED"})
 
@@ -128,3 +134,71 @@ def _terminal_event(
         **extras,
         error_message=state.get("error_message"),
     )
+
+
+class APEventBridge:
+    """Polls an APStatusSource and emits diffed events via an EventProducer.
+
+    Per docs/LENS_IMPLEMENTATION.md §4.3. The bridge owns the prior-snapshot
+    state across ticks; if it crashes and restarts, the projection layer's
+    event-id dedup catches duplicate events (§5.7).
+    """
+
+    def __init__(
+        self,
+        *,
+        source: APStatusSource,
+        producer: EventProducer,
+        build_id: str,
+        poll_interval_sec: float = 5.0,
+        now: Callable[[], datetime] | None = None,
+        id_gen: Callable[[], str] | None = None,
+    ) -> None:
+        self._source = source
+        self._producer = producer
+        self._build_id = build_id
+        self._interval = poll_interval_sec
+        self._now = now or (lambda: datetime.now(UTC))
+        self._id_gen = id_gen or (lambda: str(uuid.uuid4()))
+        self._previous: dict[str, dict[str, Any]] = {}
+        self._stopped = asyncio.Event()
+
+    async def run(self) -> None:
+        await self._producer.start()
+        try:
+            while not self._stopped.is_set():
+                await self._tick()
+                try:
+                    await asyncio.wait_for(
+                        self._stopped.wait(), timeout=self._interval
+                    )
+                except TimeoutError:
+                    pass
+        finally:
+            await self._producer.stop()
+
+    async def stop(self) -> None:
+        self._stopped.set()
+
+    async def _tick(self) -> None:
+        try:
+            snapshot = await self._source.fetch_snapshot()
+        except Exception:
+            logger.exception("APStatusSource fetch failed; will retry next tick")
+            return
+        events = diff_snapshots(
+            self._previous,
+            snapshot,
+            build_id=self._build_id,
+            now=self._now(),
+            id_gen=self._id_gen,
+        )
+        for event in events:
+            try:
+                await self._producer.send(event)
+            except Exception:
+                logger.exception(
+                    "producer.send failed for %s; event dropped on this tick",
+                    event.event_type,
+                )
+        self._previous = snapshot
