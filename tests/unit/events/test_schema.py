@@ -376,5 +376,16 @@ def test_node_completed_accepts_zero_duration() -> None:
     assert evt.duration_seconds == 0.0
 
 
+def test_node_completed_rejects_negative_duration() -> None:
+    """Negative durations are nonsensical (DP-6: loud failure)."""
+    from lens.events.schema import NodeCompleted
+
+    payload = _valid_node_completed_input()
+    payload["duration_seconds"] = -0.001
+    with pytest.raises(ValidationError) as exc_info:
+        NodeCompleted(**payload)  # type: ignore[arg-type]
+    assert "duration_seconds" in str(exc_info.value)
+
+
 
 
