@@ -269,3 +269,17 @@ def test_validate_raises_when_no_schema_for_major_version(tmp_path: Path) -> Non
     assert "2.0" in str(exc_info.value)
 
 
+def test_validate_raises_on_missing_required_field_in_payload(tmp_path: Path) -> None:
+    from lens.events.exceptions import SchemaValidationError
+    from lens.events.registry import SchemaRegistry
+
+    _write_schema(tmp_path, "NodeStarted", 1, _minimal_node_started_schema())
+    registry = SchemaRegistry(tmp_path)
+
+    payload = _valid_node_started_payload()
+    del payload["node_id"]
+    with pytest.raises(SchemaValidationError) as exc_info:
+        registry.validate(payload)
+    assert "node_id" in str(exc_info.value)
+
+
