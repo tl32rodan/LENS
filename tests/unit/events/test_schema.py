@@ -244,3 +244,14 @@ def test_node_started_accepts_each_valid_level(level: str) -> None:
     assert evt.level == level
 
 
+def test_node_started_event_type_field_is_literal() -> None:
+    """event_type for a NodeStarted instance must be the constant `'NodeStarted'`."""
+    from lens.events.schema import NodeStarted
+
+    payload = _valid_node_started_input()
+    payload["event_type"] = "FlowStarted"  # wrong literal
+    with pytest.raises(ValidationError) as exc_info:
+        NodeStarted(**payload)  # type: ignore[arg-type]
+    assert "event_type" in str(exc_info.value)
+
+
