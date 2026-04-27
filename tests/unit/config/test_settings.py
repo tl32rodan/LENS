@@ -94,3 +94,14 @@ def test_settings_loads_from_dotenv_file(
     settings = Settings()
     assert settings.log_level == "WARNING"
     assert settings.api_port == 7777
+
+
+def test_pg_dsn_validator_accepts_asyncpg_dsn(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A correctly-formed asyncpg DSN passes the validator."""
+    from lens.config import Settings
+
+    monkeypatch.setenv(
+        "LENS_PG_DSN", "postgresql+asyncpg://user:pass@db.internal:5432/lens"
+    )
+    settings = Settings()
+    assert settings.pg_dsn == "postgresql+asyncpg://user:pass@db.internal:5432/lens"
