@@ -574,6 +574,15 @@ def test_any_event_parses_node_started_by_event_type() -> None:
     assert evt.entity_id == "drc_flow"
 
 
+def test_any_event_parses_flow_failed_by_event_type() -> None:
+    from lens.events.schema import FlowFailed, parse_event
+
+    payload = {**_valid_flow_failed_input(), "event_type": "FlowFailed"}
+    evt = parse_event(payload)
+    assert isinstance(evt, FlowFailed)
+    assert evt.exit_code == 1
+
+
 
 
 
