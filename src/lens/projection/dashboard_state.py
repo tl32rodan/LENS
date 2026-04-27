@@ -25,7 +25,7 @@ class DashboardStateProjection(ProjectionConsumer):
 
     def __init__(self, store: DashboardStateStore) -> None:
         super().__init__(store)
-        self._store: DashboardStateStore = store  # type: ignore[assignment]
+        self._store: DashboardStateStore = store
 
     async def apply(self, event: dict[str, Any], txn: ProjectionTransaction) -> None:
         del txn  # in-memory store mutates directly; PG adapter will use it
