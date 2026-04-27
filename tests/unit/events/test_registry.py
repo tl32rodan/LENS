@@ -414,5 +414,30 @@ def test_get_schema_raises_for_unknown_version(tmp_path: Path) -> None:
     assert "9.0" in str(exc_info.value)
 
 
+# ---------------------------------------------------------------------------
+# Phase-0 schema files — smoke tests against the real docs/event_schemas/
+# ---------------------------------------------------------------------------
+
+PROJECT_SCHEMA_DIR = Path(__file__).resolve().parents[3] / "docs" / "event_schemas"
+
+PHASE0_EVENT_TYPES = (
+    "NodeStarted",
+    "NodeCompleted",
+    "FlowStarted",
+    "FlowCompleted",
+    "FlowFailed",
+)
+
+
+def test_each_phase0_schema_file_is_loadable_by_registry() -> None:
+    """All 5 Phase-0 hand-written schemas must parse and register cleanly."""
+    from lens.events.registry import SchemaRegistry
+
+    registry = SchemaRegistry(PROJECT_SCHEMA_DIR)
+    for event_type in PHASE0_EVENT_TYPES:
+        registry.get_schema(event_type, "1.0")  # must not raise
+    assert registry.schema_count() == len(PHASE0_EVENT_TYPES)
+
+
 
 
