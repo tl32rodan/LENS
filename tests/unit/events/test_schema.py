@@ -443,5 +443,17 @@ def test_flow_started_level_must_be_flow() -> None:
     assert "level" in str(exc_info.value)
 
 
+def test_flow_started_accepts_optional_library_and_owner() -> None:
+    """library and owner are nullable (decision Q2; matches dashboard_kg_state schema)."""
+    from lens.events.schema import FlowStarted
+
+    payload = _valid_flow_started_input()
+    payload["library"] = "stdcell_a"
+    payload["owner"] = "alice"
+    evt = FlowStarted(**payload)  # type: ignore[arg-type]
+    assert evt.library == "stdcell_a"
+    assert evt.owner == "alice"
+
+
 
 
