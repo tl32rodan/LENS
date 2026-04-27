@@ -8,6 +8,7 @@ for local development.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Literal
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -36,6 +37,14 @@ class Settings(BaseSettings):
     observer_csv_path: Path = Path("/data/ap/dashboard.csv")
 
     log_level: str = "INFO"
+
+    # Adapter switches (DP-8). Defaults are production: real Kafka + Postgres.
+    bus: Literal["memory", "kafka"] = "kafka"
+    projection_store: Literal["memory", "postgres"] = "postgres"
+
+    # Observer / producer runtime knobs
+    observer_build_id: str = "default-build"
+    producer_local_buffer_path: Path = Path("/var/lib/lens/producer-buffer.ndjson")
 
     @field_validator("pg_dsn")
     @classmethod
