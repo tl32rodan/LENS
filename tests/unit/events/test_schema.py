@@ -222,3 +222,14 @@ def test_node_started_requires_entity_id() -> None:
     assert "entity_id" in str(exc_info.value)
 
 
+def test_node_started_rejects_unknown_level_value() -> None:
+    """Per DP-3, level is a closed enum; unknown values must be rejected."""
+    from lens.events.schema import NodeStarted
+
+    payload = _valid_node_started_input()
+    payload["level"] = "INVALID"
+    with pytest.raises(ValidationError) as exc_info:
+        NodeStarted(**payload)  # type: ignore[arg-type]
+    assert "level" in str(exc_info.value)
+
+
