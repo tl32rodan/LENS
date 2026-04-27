@@ -8,6 +8,7 @@ license = { file = "LICENSE" }
 dependencies = [
     "jsonschema>=4.0",
     "pydantic>=2.7",
+    "pydantic-settings>=2.4",
 ]
 
 [project.optional-dependencies]
@@ -62,9 +63,13 @@ addopts = [
     "-ra",
     "--strict-markers",
     "--strict-config",
+    "-m", "not integration",
 ]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+markers = [
+    "integration: requires real Kafka/Postgres; skipped by default in CI",
+]
 
 [tool.coverage.run]
 source = ["src/lens"]
