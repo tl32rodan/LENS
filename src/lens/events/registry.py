@@ -30,7 +30,13 @@ class SchemaRegistry:
                 continue
             event_type = _snake_to_pascal(match.group("snake"))
             major = int(match.group("major"))
-            self._schemas[(event_type, major)] = json.loads(path.read_text())
+            try:
+                self._schemas[(event_type, major)] = json.loads(path.read_text())
+            except json.JSONDecodeError as e:
+                raise SchemaValidationError(
+                    f"malformed JSON in {path.name}: {e.msg}",
+                    event_type=event_type,
+                ) from e
 
     def schema_count(self) -> int:
         """Return the number of distinct (event_type, major) schemas loaded."""
