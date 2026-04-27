@@ -118,3 +118,26 @@ async def test_two_consumers_on_same_topic_both_receive_events() -> None:
 
     assert len(a) == 1
     assert len(b) == 1
+
+
+async def test_event_on_topic_a_does_not_reach_consumer_of_topic_b() -> None:
+    """Topics are isolated — events on one topic do not bleed into another."""
+    from lens.backbone.memory_bus import InMemoryEventBus
+
+    bus = InMemoryEventBus()
+    received_b: list[dict[str, Any]] = []
+
+    class _Recorder:
+        async def handle(self, event: dict[str, Any]) -> None:
+            received_b.append(event)
+
+    consumer_b = bus.consumer("topic.b", group_id="g", handler=_Recorder())
+    producer_a = bus.producer("topic.a")
+    await producer_a.send(_sample_event())
+
+    run_task = asyncio.create_task(consumer_b.run())
+    await asyncio.sleep(0.05)  # plenty of time to wrongly receive
+    await consumer_b.stop()
+    await run_task
+
+    assert received_b == []
