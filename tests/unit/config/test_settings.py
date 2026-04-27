@@ -79,3 +79,18 @@ def test_env_var_overrides_path_default(monkeypatch: pytest.MonkeyPatch) -> None
 
     monkeypatch.setenv("LENS_OBSERVER_CSV_PATH", "/tmp/ap.csv")  # noqa: S108 — test fixture path
     assert Settings().observer_csv_path == Path("/tmp/ap.csv")  # noqa: S108
+
+
+def test_settings_loads_from_dotenv_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A .env file in cwd is read at construction (pydantic-settings default)."""
+    from lens.config import Settings
+
+    env_file = tmp_path / ".env"
+    env_file.write_text("LENS_LOG_LEVEL=WARNING\nLENS_API_PORT=7777\n")
+
+    monkeypatch.chdir(tmp_path)
+    settings = Settings()
+    assert settings.log_level == "WARNING"
+    assert settings.api_port == 7777
