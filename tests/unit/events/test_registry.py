@@ -439,5 +439,70 @@ def test_each_phase0_schema_file_is_loadable_by_registry() -> None:
     assert registry.schema_count() == len(PHASE0_EVENT_TYPES)
 
 
+def _canonical_payloads() -> list[tuple[str, dict[str, Any]]]:
+    """One minimal valid payload per Phase-0 event type — same envelope, type-specific tail.
+
+    Using model_dump_json round-trip on the Pydantic models keeps these payloads
+    in lock-step with the in-process contract — guards against drift until the
+    Phase-1 CI consistency check exists.
+    """
+    import json
+    from datetime import UTC, datetime
+
+    from lens.events.schema import (
+        FlowCompleted,
+        FlowFailed,
+        FlowStarted,
+        NodeCompleted,
+        NodeStarted,
+    )
+
+    common = {
+        "event_id": "550e8400-e29b-41d4-a716-446655440000",
+        "schema_version": "1.0",
+        "timestamp": datetime(2024, 4, 24, 10, 0, 0, tzinfo=UTC),
+        "build_id": "build_42",
+    }
+    pairs: list[tuple[str, Any]] = [
+        ("NodeStarted", NodeStarted(**common, node_id="n", level="flow", entity_id="f")),  # type: ignore[arg-type]
+        (
+            "NodeCompleted",
+            NodeCompleted(  # type: ignore[arg-type]
+                **common,
+                node_id="n",
+                level="flow",
+                entity_id="f",
+                exit_code=0,
+                duration_seconds=1.0,
+            ),
+        ),
+        ("FlowStarted", FlowStarted(**common, entity_id="f")),  # type: ignore[arg-type]
+        (
+            "FlowCompleted",
+            FlowCompleted(**common, entity_id="f", exit_code=0, duration_seconds=1.0),  # type: ignore[arg-type]
+        ),
+        (
+            "FlowFailed",
+            FlowFailed(**common, entity_id="f", exit_code=1, duration_seconds=0.5),  # type: ignore[arg-type]
+        ),
+    ]
+    return [(et, json.loads(model.model_dump_json())) for et, model in pairs]
+
+
+@pytest.mark.parametrize("event_type,payload", _canonical_payloads())
+def test_each_phase0_schema_validates_a_canonical_example_payload(
+    event_type: str, payload: dict[str, Any]
+) -> None:
+    """A canonical Pydantic-derived payload must pass JSON Schema validation.
+
+    This catches drift between the in-process Pydantic models and the
+    hand-written wire-contract JSON Schemas (deferred Phase-1 CI check, §2.8).
+    """
+    from lens.events.registry import SchemaRegistry
+
+    registry = SchemaRegistry(PROJECT_SCHEMA_DIR)
+    registry.validate(payload)
+
+
 
 
