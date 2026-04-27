@@ -233,3 +233,14 @@ def test_node_started_rejects_unknown_level_value() -> None:
     assert "level" in str(exc_info.value)
 
 
+@pytest.mark.parametrize("level", ["build", "library", "flow", "pvt", "cell"])
+def test_node_started_accepts_each_valid_level(level: str) -> None:
+    """All five levels in the DP-3 enum must be accepted."""
+    from lens.events.schema import NodeStarted
+
+    payload = _valid_node_started_input()
+    payload["level"] = level
+    evt = NodeStarted(**payload)  # type: ignore[arg-type]
+    assert evt.level == level
+
+
