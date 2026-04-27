@@ -48,3 +48,13 @@ def test_env_var_with_lens_prefix_overrides_string_default(
 
     monkeypatch.setenv("LENS_LOG_LEVEL", "DEBUG")
     assert Settings().log_level == "DEBUG"
+
+
+def test_env_var_overrides_int_default_via_coercion(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Pydantic coerces string env vars into int fields."""
+    from lens.config import Settings
+
+    monkeypatch.setenv("LENS_API_PORT", "9999")
+    assert Settings().api_port == 9999
