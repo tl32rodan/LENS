@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 from fastapi import FastAPI
 
 from lens.api.app import create_app
-from lens.backbone.bus import EventBus
+from lens.backbone.bus import EventBus, EventConsumer
 from lens.config import Settings
 from lens.projection.store import DashboardStateStore
 
@@ -81,7 +81,7 @@ def build_projection_consumer(
     *,
     bus: EventBus | None = None,
     store: DashboardStateStore | None = None,
-) -> tuple[DashboardStateProjection, object]:
+) -> tuple[DashboardStateProjection, EventConsumer]:
     """Wire the DashboardStateProjection into a bus consumer.
 
     Returns (projection, consumer) so the caller can `consumer.run()` and

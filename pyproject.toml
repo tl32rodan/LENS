@@ -82,6 +82,10 @@ branch = true
 omit = [
     "src/lens/backbone/kafka_bus.py",  # aiokafka wrappers — integration-tested only
     "src/lens/projection/postgres_adapter.py",  # asyncpg+SA wrappers — integration-tested only
+    "src/lens/observer/__main__.py",  # CLI entry — smoke-tested via import
+    "src/lens/projection/__main__.py",  # CLI entry — smoke-tested via import
+    "src/lens/api/asgi.py",  # uvicorn entry — exercises composition; integration-only
+    "src/lens/logging_setup.py",  # one-shot logging config; not exercised in tests
 ]
 
 [tool.coverage.report]
