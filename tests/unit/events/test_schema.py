@@ -44,3 +44,14 @@ def test_envelope_requires_event_id() -> None:
     with pytest.raises(ValidationError) as exc_info:
         EventEnvelope(**payload)  # type: ignore[arg-type]
     assert "event_id" in str(exc_info.value)
+
+
+def test_envelope_requires_schema_version() -> None:
+    """Missing schema_version must raise ValidationError (DP-6)."""
+    from lens.events.schema import EventEnvelope
+
+    payload = _valid_envelope_input()
+    del payload["schema_version"]
+    with pytest.raises(ValidationError) as exc_info:
+        EventEnvelope(**payload)  # type: ignore[arg-type]
+    assert "schema_version" in str(exc_info.value)
