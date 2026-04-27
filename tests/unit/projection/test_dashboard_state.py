@@ -12,7 +12,9 @@ import pytest
 from lens.projection.memory_adapter import InMemoryDashboardStateStore
 
 
-def _flow_started(event_id: str, build_id: str = "b1", entity_id: str = "f1", **kw: Any) -> dict[str, Any]:
+def _flow_started(
+    event_id: str, build_id: str = "b1", entity_id: str = "f1", **kw: Any
+) -> dict[str, Any]:
     return {
         "event_type": "FlowStarted",
         "event_id": event_id,
@@ -26,7 +28,9 @@ def _flow_started(event_id: str, build_id: str = "b1", entity_id: str = "f1", **
     }
 
 
-def _flow_completed(event_id: str, build_id: str = "b1", entity_id: str = "f1", **kw: Any) -> dict[str, Any]:
+def _flow_completed(
+    event_id: str, build_id: str = "b1", entity_id: str = "f1", **kw: Any
+) -> dict[str, Any]:
     return {
         "event_type": "FlowCompleted",
         "event_id": event_id,
@@ -42,7 +46,9 @@ def _flow_completed(event_id: str, build_id: str = "b1", entity_id: str = "f1", 
     }
 
 
-def _flow_failed(event_id: str, build_id: str = "b1", entity_id: str = "f1", **kw: Any) -> dict[str, Any]:
+def _flow_failed(
+    event_id: str, build_id: str = "b1", entity_id: str = "f1", **kw: Any
+) -> dict[str, Any]:
     return {
         "event_type": "FlowFailed",
         "event_id": event_id,
@@ -95,7 +101,7 @@ async def test_projection_does_not_mark_applied_on_failure() -> None:
     from lens.projection.dashboard_state import DashboardStateProjection
 
     class _Boom(DashboardStateProjection):
-        async def apply(self, event: Any, txn: Any) -> None:  # type: ignore[override]
+        async def apply(self, event: Any, txn: Any) -> None:
             raise RuntimeError("apply boom")
 
     store = InMemoryDashboardStateStore()
@@ -111,7 +117,7 @@ async def test_projection_transaction_rolls_back_on_apply_exception() -> None:
     from lens.projection.dashboard_state import DashboardStateProjection
 
     class _Boom(DashboardStateProjection):
-        async def apply(self, event: Any, txn: Any) -> None:  # type: ignore[override]
+        async def apply(self, event: Any, txn: Any) -> None:
             await self._store.upsert_kg("b1", {"status": "POISONED"})
             raise RuntimeError("apply boom")
 

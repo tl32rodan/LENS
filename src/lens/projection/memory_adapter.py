@@ -148,5 +148,3 @@ class InMemoryDashboardStateStore:
             for kg in self._state.values()
             if kg.get("library") == library
         ]
-
-
