@@ -9,6 +9,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 
 def _write_schema(
     dir_: Path, event_type: str, major: int, schema: dict[str, Any]
@@ -135,3 +137,59 @@ def test_validate_returns_none_for_valid_node_started_payload(tmp_path: Path) ->
     _write_schema(tmp_path, "NodeStarted", 1, _minimal_node_started_schema())
     registry = SchemaRegistry(tmp_path)
     registry.validate(_valid_node_started_payload())  # must not raise
+
+
+def _all_event_types_with_payload() -> list[tuple[str, dict[str, Any]]]:
+    """The 5 Phase-0 event types with a minimal payload satisfying their schema."""
+    base_envelope = {
+        "schema_version": "1.0",
+        "event_id": "550e8400-e29b-41d4-a716-446655440000",
+    }
+    return [
+        ("NodeStarted", {**base_envelope, "event_type": "NodeStarted", "node_id": "n"}),
+        (
+            "NodeCompleted",
+            {**base_envelope, "event_type": "NodeCompleted", "exit_code": 0},
+        ),
+        ("FlowStarted", {**base_envelope, "event_type": "FlowStarted", "entity_id": "f"}),
+        (
+            "FlowCompleted",
+            {**base_envelope, "event_type": "FlowCompleted", "entity_id": "f", "exit_code": 0},
+        ),
+        ("FlowFailed", {**base_envelope, "event_type": "FlowFailed", "entity_id": "f"}),
+    ]
+
+
+@pytest.fixture
+def registry_with_minimal_schemas(tmp_path: Path) -> Any:
+    """Registry seeded with one minimal schema per Phase-0 event type."""
+    from lens.events.registry import SchemaRegistry
+
+    for event_type, payload in _all_event_types_with_payload():
+        required = ["event_type", "schema_version", "event_id", *(
+            k for k in payload if k not in ("event_type", "schema_version", "event_id")
+        )]
+        _write_schema(
+            tmp_path,
+            event_type,
+            1,
+            {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "title": event_type,
+                "type": "object",
+                "additionalProperties": False,
+                "required": required,
+                "properties": {k: {} for k in required},
+            },
+        )
+    return SchemaRegistry(tmp_path)
+
+
+@pytest.mark.parametrize("event_type,payload", _all_event_types_with_payload())
+def test_validate_accepts_each_of_the_five_event_types(
+    registry_with_minimal_schemas: Any,
+    event_type: str,
+    payload: dict[str, Any],
+) -> None:
+    """Every Phase-0 event type can pass validation given a matching schema."""
+    registry_with_minimal_schemas.validate(payload)
