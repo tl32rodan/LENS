@@ -36,7 +36,7 @@ def test_projection_transaction_runtime_check_accepts_conforming_stub() -> None:
     from lens.projection.store import ProjectionTransaction
 
     class _Stub:
-        async def __aenter__(self) -> "_Stub":
+        async def __aenter__(self) -> _Stub:
             return self
 
         async def __aexit__(self, *exc_info: Any) -> None: ...
@@ -60,7 +60,7 @@ def test_dashboard_state_store_runtime_check_accepts_conforming_stub() -> None:
         async def mark_applied(self, projection_name: str, event_id: str) -> None: ...
 
     class _DummyTxn:
-        async def __aenter__(self) -> "_DummyTxn":
+        async def __aenter__(self) -> _DummyTxn:
             return self
 
         async def __aexit__(self, *exc_info: Any) -> None: ...
@@ -76,9 +76,7 @@ def test_dashboard_state_store_runtime_check_accepts_conforming_stub() -> None:
             return _DummyTxn()
 
         async def upsert_kg(self, build_id: str, fields: dict[str, Any]) -> None: ...
-        async def increment_counter(
-            self, build_id: str, field: str, delta: int = 1
-        ) -> None: ...
+        async def increment_counter(self, build_id: str, field: str, delta: int = 1) -> None: ...
 
         async def truncate_all(self) -> None: ...
         async def get_kg(self, build_id: str) -> dict[str, Any] | None:
