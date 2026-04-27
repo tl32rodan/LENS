@@ -77,6 +77,9 @@ markers = [
 [tool.coverage.run]
 source = ["src/lens"]
 branch = true
+omit = [
+    "src/lens/backbone/kafka_bus.py",  # aiokafka wrappers — integration-tested only
+]
 
 [tool.coverage.report]
 exclude_lines = [

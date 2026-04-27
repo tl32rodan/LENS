@@ -14,14 +14,14 @@ from pathlib import Path
 
 
 def test_buffer_is_empty_when_path_does_not_exist(tmp_path: Path) -> None:
-    from lens.backbone.kafka_bus import NDJSONLocalBuffer
+    from lens.backbone.kafka_buffer import NDJSONLocalBuffer
 
     buf = NDJSONLocalBuffer(tmp_path / "buffer.ndjson")
     assert buf.is_empty() is True
 
 
 def test_buffer_append_then_drain_round_trips(tmp_path: Path) -> None:
-    from lens.backbone.kafka_bus import NDJSONLocalBuffer
+    from lens.backbone.kafka_buffer import NDJSONLocalBuffer
 
     buf = NDJSONLocalBuffer(tmp_path / "buf.ndjson")
     buf.append({"event_type": "FlowStarted", "id": 1})
@@ -35,7 +35,7 @@ def test_buffer_append_then_drain_round_trips(tmp_path: Path) -> None:
 
 
 def test_buffer_drain_clears_storage(tmp_path: Path) -> None:
-    from lens.backbone.kafka_bus import NDJSONLocalBuffer
+    from lens.backbone.kafka_buffer import NDJSONLocalBuffer
 
     buf = NDJSONLocalBuffer(tmp_path / "buf.ndjson")
     buf.append({"a": 1})
@@ -45,7 +45,7 @@ def test_buffer_drain_clears_storage(tmp_path: Path) -> None:
 
 
 def test_buffer_drain_returns_empty_list_for_missing_file(tmp_path: Path) -> None:
-    from lens.backbone.kafka_bus import NDJSONLocalBuffer
+    from lens.backbone.kafka_buffer import NDJSONLocalBuffer
 
     buf = NDJSONLocalBuffer(tmp_path / "never-created.ndjson")
     assert buf.drain() == []
@@ -54,7 +54,7 @@ def test_buffer_drain_returns_empty_list_for_missing_file(tmp_path: Path) -> Non
 
 def test_buffer_skips_blank_lines_on_drain(tmp_path: Path) -> None:
     """Robustness: a stray blank line in the buffer file does not break drain."""
-    from lens.backbone.kafka_bus import NDJSONLocalBuffer
+    from lens.backbone.kafka_buffer import NDJSONLocalBuffer
 
     path = tmp_path / "buf.ndjson"
     path.write_text('{"id": 1}\n\n{"id": 2}\n')
