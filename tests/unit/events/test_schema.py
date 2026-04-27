@@ -387,5 +387,18 @@ def test_node_completed_rejects_negative_duration() -> None:
     assert "duration_seconds" in str(exc_info.value)
 
 
+def test_node_completed_output_hash_is_optional() -> None:
+    """output_hash is a Phase 2+ field; both default and explicit value work."""
+    from lens.events.schema import NodeCompleted
+
+    evt_default = NodeCompleted(**_valid_node_completed_input())  # type: ignore[arg-type]
+    assert evt_default.output_hash is None
+
+    payload = _valid_node_completed_input()
+    payload["output_hash"] = "sha256:def"
+    evt_set = NodeCompleted(**payload)  # type: ignore[arg-type]
+    assert evt_set.output_hash == "sha256:def"
+
+
 
 
