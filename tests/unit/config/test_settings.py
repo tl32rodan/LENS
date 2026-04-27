@@ -105,3 +105,17 @@ def test_pg_dsn_validator_accepts_asyncpg_dsn(monkeypatch: pytest.MonkeyPatch) -
     )
     settings = Settings()
     assert settings.pg_dsn == "postgresql+asyncpg://user:pass@db.internal:5432/lens"
+
+
+def test_pg_dsn_validator_rejects_non_asyncpg_dsn(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A psycopg / sync DSN must be rejected — async-first invariant."""
+    from pydantic import ValidationError
+
+    from lens.config import Settings
+
+    monkeypatch.setenv("LENS_PG_DSN", "postgresql://user:pass@db:5432/lens")
+    with pytest.raises(ValidationError) as exc_info:
+        Settings()
+    assert "asyncpg" in str(exc_info.value)
