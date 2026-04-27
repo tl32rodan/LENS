@@ -268,3 +268,13 @@ def test_node_started_input_hash_is_optional() -> None:
     assert evt_set.input_hash == "sha256:abc"
 
 
+def test_node_started_resource_request_accepts_int_dict() -> None:
+    """resource_request is an optional dict[str, int] for Phase 2+ scheduling."""
+    from lens.events.schema import NodeStarted
+
+    payload = _valid_node_started_input()
+    payload["resource_request"] = {"cpu": 4, "memory_gb": 16}
+    evt = NodeStarted(**payload)  # type: ignore[arg-type]
+    assert evt.resource_request == {"cpu": 4, "memory_gb": 16}
+
+
