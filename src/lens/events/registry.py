@@ -68,7 +68,7 @@ class SchemaRegistry:
             ) from e
         schema = self.get_schema(event_type, version)
         try:
-            jsonschema.validate(event_dict, schema)
+            jsonschema.validate(event_dict, schema, format_checker=jsonschema.FormatChecker())
         except jsonschema.ValidationError as e:
             path = "/".join(str(p) for p in e.absolute_path) or "<root>"
             raise SchemaValidationError(
