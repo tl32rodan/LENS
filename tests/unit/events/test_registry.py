@@ -225,3 +225,17 @@ def test_validate_raises_on_missing_event_type_key(tmp_path: Path) -> None:
     with pytest.raises(SchemaValidationError) as exc_info:
         registry.validate(payload)
     assert "event_type" in str(exc_info.value)
+
+
+def test_validate_raises_on_missing_schema_version_key(tmp_path: Path) -> None:
+    from lens.events.exceptions import SchemaValidationError
+    from lens.events.registry import SchemaRegistry
+
+    _write_schema(tmp_path, "NodeStarted", 1, _minimal_node_started_schema())
+    registry = SchemaRegistry(tmp_path)
+
+    payload = _valid_node_started_payload()
+    del payload["schema_version"]
+    with pytest.raises(SchemaValidationError) as exc_info:
+        registry.validate(payload)
+    assert "schema_version" in str(exc_info.value)
