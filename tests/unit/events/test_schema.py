@@ -142,3 +142,14 @@ def test_envelope_parses_iso8601_timestamp_with_offset() -> None:
     assert env.timestamp.utcoffset() == timedelta(hours=8)
 
 
+def test_envelope_rejects_naive_timestamp() -> None:
+    """Naive datetimes are ambiguous across regions; reject them (DP-6, decision Q3)."""
+    from lens.events.schema import EventEnvelope
+
+    payload = _valid_envelope_input()
+    payload["timestamp"] = datetime(2024, 4, 24, 10, 0, 0)  # no tzinfo
+    with pytest.raises(ValidationError) as exc_info:
+        EventEnvelope(**payload)  # type: ignore[arg-type]
+    assert "timestamp" in str(exc_info.value)
+
+
