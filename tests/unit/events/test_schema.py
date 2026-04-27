@@ -473,5 +473,18 @@ def test_flow_completed_accepts_valid_input() -> None:
     assert evt.event_type == "FlowCompleted"
 
 
+@pytest.mark.parametrize("exit_code", [0, 1, 42, -9, 255])
+def test_flow_completed_accepts_any_exit_code(exit_code: int) -> None:
+    """Decision Q1: schema accepts any int; projection enforces convention."""
+    from lens.events.schema import FlowCompleted
+
+    payload = _valid_flow_completed_input()
+    payload["exit_code"] = exit_code
+    evt = FlowCompleted(**payload)  # type: ignore[arg-type]
+    assert evt.exit_code == exit_code
+
+
+
+
 
 
