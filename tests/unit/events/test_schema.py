@@ -409,5 +409,28 @@ def test_node_completed_serialization_roundtrip() -> None:
     assert reconstructed == original
 
 
+# ---------------------------------------------------------------------------
+# Flow* events (decisions Q1: loose exit_code, Q2: optional library/owner)
+# ---------------------------------------------------------------------------
+
+
+def _valid_flow_started_input() -> dict[str, object]:
+    return {
+        **_valid_envelope_input(),
+        "entity_id": "drc_flow",
+    }
+
+
+def test_flow_started_accepts_valid_input() -> None:
+    from lens.events.schema import FlowStarted
+
+    evt = FlowStarted(**_valid_flow_started_input())  # type: ignore[arg-type]
+    assert evt.entity_id == "drc_flow"
+    assert evt.level == "flow"
+    assert evt.event_type == "FlowStarted"
+    assert evt.library is None
+    assert evt.owner is None
+
+
 
 
