@@ -593,6 +593,23 @@ def test_any_event_rejects_unknown_event_type() -> None:
     assert "event_type" in str(exc_info.value)
 
 
+def test_any_event_rejects_payload_with_extra_field() -> None:
+    """A payload claiming event_type=NodeStarted but carrying NodeCompleted-only
+    fields (e.g., exit_code) must be rejected — the matched discriminator's
+    extra='forbid' enforces the model boundary (DP-6).
+    """
+    from lens.events.schema import parse_event
+
+    payload = {
+        **_valid_node_started_input(),
+        "event_type": "NodeStarted",
+        "exit_code": 0,  # belongs to NodeCompleted, not NodeStarted
+    }
+    with pytest.raises(ValidationError) as exc_info:
+        parse_event(payload)
+    assert "exit_code" in str(exc_info.value)
+
+
 
 
 
