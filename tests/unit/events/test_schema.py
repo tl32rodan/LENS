@@ -541,6 +541,14 @@ def test_flow_started_serialization_roundtrip() -> None:
     assert reconstructed == original
 
 
+def test_flow_completed_serialization_roundtrip() -> None:
+    from lens.events.schema import FlowCompleted
+
+    original = FlowCompleted(**_valid_flow_completed_input())  # type: ignore[arg-type]
+    reconstructed = FlowCompleted.model_validate_json(original.model_dump_json())
+    assert reconstructed == original
+
+
 
 
 
