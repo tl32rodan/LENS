@@ -9,15 +9,18 @@ Spec references:
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from uuid import UUID
 
 import pytest
 from pydantic import ValidationError
+
+_VALID_EVENT_ID = UUID("550e8400-e29b-41d4-a716-446655440000")
 
 
 def _valid_envelope_input() -> dict[str, object]:
     """Return a kwargs dict that satisfies every required EventEnvelope field."""
     return {
-        "event_id": "550e8400-e29b-41d4-a716-446655440000",
+        "event_id": str(_VALID_EVENT_ID),
         "schema_version": "1.0",
         "timestamp": datetime(2024, 4, 24, 10, 0, 0, tzinfo=UTC),
         "build_id": "build_42",
@@ -29,7 +32,7 @@ def test_envelope_accepts_valid_minimal_input() -> None:
     from lens.events.schema import EventEnvelope
 
     env = EventEnvelope(**_valid_envelope_input())  # type: ignore[arg-type]
-    assert env.event_id == "550e8400-e29b-41d4-a716-446655440000"
+    assert env.event_id == _VALID_EVENT_ID
     assert env.schema_version == "1.0"
     assert env.build_id == "build_42"
     assert env.parent_event_id is None
