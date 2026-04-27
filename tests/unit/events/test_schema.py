@@ -288,5 +288,16 @@ def test_node_started_serialization_roundtrip() -> None:
     assert reconstructed == original
 
 
+def test_node_started_rejects_extra_unknown_field() -> None:
+    """ConfigDict(extra='forbid') is inherited from EventEnvelope."""
+    from lens.events.schema import NodeStarted
+
+    payload = _valid_node_started_input()
+    payload["mystery"] = "?"
+    with pytest.raises(ValidationError) as exc_info:
+        NodeStarted(**payload)  # type: ignore[arg-type]
+    assert "mystery" in str(exc_info.value)
+
+
 
 
