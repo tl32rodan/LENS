@@ -13,6 +13,7 @@ the Protocol, not the parser.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import csv
 import logging
 import uuid
@@ -20,6 +21,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Protocol
+from uuid import UUID
 
 from lens.backbone.bus import EventProducer
 from lens.events.schema import (
@@ -74,7 +76,7 @@ def diff_snapshots(
     *,
     build_id: str,
     now: datetime,
-    id_gen: Callable[[], str],
+    id_gen: Callable[[], UUID],
 ) -> list[EventEnvelope]:
     """Pure function: compute events that represent the transition `old → new`.
 
@@ -119,19 +121,23 @@ def diff_snapshots(
 def _terminal_event(
     status: str,
     state: dict[str, Any],
-    id_gen: Callable[[], str],
+    id_gen: Callable[[], UUID],
     base: dict[str, Any],
 ) -> EventEnvelope:
-    extras = {
-        "exit_code": 0 if status == "COMPLETED" else 1,
-        "duration_seconds": 0.0,  # observer doesn't track duration in Phase 0
-    }
+    exit_code = 0 if status == "COMPLETED" else 1
+    duration_seconds = 0.0  # observer doesn't track duration in Phase 0
     if status == "COMPLETED":
-        return FlowCompleted(event_id=id_gen(), **base, **extras)
+        return FlowCompleted(
+            event_id=id_gen(),
+            **base,
+            exit_code=exit_code,
+            duration_seconds=duration_seconds,
+        )
     return FlowFailed(
         event_id=id_gen(),
         **base,
-        **extras,
+        exit_code=exit_code,
+        duration_seconds=duration_seconds,
         error_message=state.get("error_message"),
     )
 
@@ -152,14 +158,15 @@ class APEventBridge:
         build_id: str,
         poll_interval_sec: float = 5.0,
         now: Callable[[], datetime] | None = None,
-        id_gen: Callable[[], str] | None = None,
+        id_gen: Callable[[], UUID] | None = None,
+        # default factories below
     ) -> None:
         self._source = source
         self._producer = producer
         self._build_id = build_id
         self._interval = poll_interval_sec
         self._now = now or (lambda: datetime.now(UTC))
-        self._id_gen = id_gen or (lambda: str(uuid.uuid4()))
+        self._id_gen = id_gen or uuid.uuid4
         self._previous: dict[str, dict[str, Any]] = {}
         self._stopped = asyncio.Event()
 
@@ -168,12 +175,8 @@ class APEventBridge:
         try:
             while not self._stopped.is_set():
                 await self._tick()
-                try:
-                    await asyncio.wait_for(
-                        self._stopped.wait(), timeout=self._interval
-                    )
-                except TimeoutError:
-                    pass
+                with contextlib.suppress(TimeoutError):
+                    await asyncio.wait_for(self._stopped.wait(), timeout=self._interval)
         finally:
             await self._producer.stop()
 
@@ -199,6 +202,6 @@ class APEventBridge:
             except Exception:
                 logger.exception(
                     "producer.send failed for %s; event dropped on this tick",
-                    event.event_type,
+                    event.model_dump()["event_type"],
                 )
         self._previous = snapshot
