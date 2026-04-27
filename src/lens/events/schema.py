@@ -47,3 +47,24 @@ class NodeCompleted(EventEnvelope):
     exit_code: int
     duration_seconds: float = Field(ge=0)
     output_hash: str | None = None  # Phase 2+ CAS output key
+
+
+class _FlowEventBase(EventEnvelope):
+    """Shared shape for FlowStarted/FlowCompleted/FlowFailed.
+
+    `level` is fixed to "flow" since these events describe flow-level
+    transitions (DP-3 still applies — the level is on the data).
+    `library` and `owner` are optional per decision Q2, matching the
+    nullable columns in dashboard_kg_state.
+    """
+
+    level: Literal["flow"] = "flow"
+    entity_id: str
+    library: str | None = None
+    owner: str | None = None
+
+
+class FlowStarted(_FlowEventBase):
+    """A flow has begun execution."""
+
+    event_type: Literal["FlowStarted"] = "FlowStarted"
