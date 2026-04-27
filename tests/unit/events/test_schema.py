@@ -522,6 +522,17 @@ def test_flow_failed_carries_optional_error_message() -> None:
     assert "drc clean check" in evt.error_message
 
 
+@pytest.mark.parametrize("exit_code", [0, 1, -9, 137, 255])
+def test_flow_failed_accepts_any_exit_code(exit_code: int) -> None:
+    """Decision Q1: schema does not enforce a nonzero invariant."""
+    from lens.events.schema import FlowFailed
+
+    payload = _valid_flow_failed_input()
+    payload["exit_code"] = exit_code
+    evt = FlowFailed(**payload)  # type: ignore[arg-type]
+    assert evt.exit_code == exit_code
+
+
 
 
 
