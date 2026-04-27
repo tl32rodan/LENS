@@ -132,3 +132,11 @@ def test_invalid_pg_dsn_raises_validation_error(
     monkeypatch.setenv("LENS_PG_DSN", "not a dsn at all")
     with pytest.raises(ValidationError):
         Settings()
+
+
+def test_unknown_env_var_is_ignored(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Stray LENS_* env vars do not crash construction (extra='ignore')."""
+    from lens.config import Settings
+
+    monkeypatch.setenv("LENS_TOTALLY_MADE_UP_FIELD", "value")
+    Settings()  # must not raise
