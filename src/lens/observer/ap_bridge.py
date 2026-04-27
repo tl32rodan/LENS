@@ -40,6 +40,8 @@ class CSVStatusSource:
         self._path = csv_path
 
     async def fetch_snapshot(self) -> dict[str, dict[str, Any]]:
+        if not self._path.exists():
+            return {}
         with self._path.open(newline="") as fh:
             reader = csv.DictReader(fh)
             return {
