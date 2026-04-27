@@ -84,3 +84,17 @@ def test_registry_skips_files_not_matching_naming_pattern(tmp_path: Path) -> Non
 
     registry = SchemaRegistry(tmp_path)
     assert registry.schema_count() == 1
+
+
+def test_registry_raises_on_malformed_json_at_construction(tmp_path: Path) -> None:
+    """Malformed JSON must fail fast at construction (DP-6, not deferred to validate)."""
+    import pytest
+
+    from lens.events.exceptions import SchemaValidationError
+    from lens.events.registry import SchemaRegistry
+
+    (tmp_path / "node_started.v1.json").write_text("{not valid json")
+
+    with pytest.raises(SchemaValidationError) as exc_info:
+        SchemaRegistry(tmp_path)
+    assert "node_started.v1.json" in str(exc_info.value)
