@@ -1,0 +1,43 @@
+"""Unit tests for the pure `diff_snapshots` function.
+
+Per docs/LENS_IMPLEMENTATION.md §4.6 (the diff is a pure function for
+testability) and docs/LENS_TEST_REFERENCE.md §3.1 (bridge-emit cases — those
+spec tests test the bridge's wiring, but the actual transition logic is what
+this file pins down).
+
+Snapshot shape: dict[flow_id, dict[str, Any]] with at least a `state` key
+in {"RUNNING", "COMPLETED", "FAILED"}.
+"""
+
+from __future__ import annotations
+
+from datetime import UTC, datetime
+from itertools import count
+from typing import Any
+
+
+def _id_gen() -> str:
+    """Deterministic stand-in for uuid4() in tests."""
+    n = next(_id_gen.counter)  # type: ignore[attr-defined]
+    return f"00000000-0000-0000-0000-{n:012d}"
+
+
+_id_gen.counter = count()  # type: ignore[attr-defined]
+
+
+_NOW = datetime(2026, 4, 27, 10, 0, 0, tzinfo=UTC)
+
+
+def _state(state: str, **extras: Any) -> dict[str, Any]:
+    return {"state": state, "library": "libA", "owner": "brian", **extras}
+
+
+def test_diff_snapshots_emits_flow_started_for_new_running_flow() -> None:
+    from lens.observer.ap_bridge import diff_snapshots
+
+    events = diff_snapshots(
+        {}, {"f1": _state("RUNNING")}, build_id="b1", now=_NOW, id_gen=_id_gen
+    )
+    assert len(events) == 1
+    assert events[0].event_type == "FlowStarted"
+    assert events[0].entity_id == "f1"
