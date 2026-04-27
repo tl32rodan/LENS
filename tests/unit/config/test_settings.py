@@ -38,3 +38,13 @@ def test_default_settings_can_be_instantiated() -> None:
     assert settings.observer_csv_path == Path("/data/ap/dashboard.csv")
     assert settings.log_level == "INFO"
     assert settings.pg_dsn.startswith("postgresql+asyncpg://")
+
+
+def test_env_var_with_lens_prefix_overrides_string_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Setting LENS_LOG_LEVEL=DEBUG overrides the default."""
+    from lens.config import Settings
+
+    monkeypatch.setenv("LENS_LOG_LEVEL", "DEBUG")
+    assert Settings().log_level == "DEBUG"
