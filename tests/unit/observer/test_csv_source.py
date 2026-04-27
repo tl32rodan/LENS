@@ -40,3 +40,27 @@ async def test_csv_source_returns_empty_when_file_missing(tmp_path: Path) -> Non
 
     snapshot = await CSVStatusSource(tmp_path / "missing.csv").fetch_snapshot()
     assert snapshot == {}
+
+
+async def test_csv_source_handles_partially_written_file(tmp_path: Path) -> None:
+    """A CSV in mid-write (header only, or trailing partial row) yields what's parseable.
+
+    AP could be writing the file when we read it. We accept "best-effort
+    parse" and rely on the next poll tick to catch up — events will be
+    deduplicated downstream by event_id (spec §5.7).
+    """
+    from lens.observer.ap_bridge import CSVStatusSource
+
+    csv_path = tmp_path / "ap.csv"
+    # Header + one good row + one truncated row (no newline at end, missing fields)
+    csv_path.write_text(
+        "flow_id,library,owner,state,started_at,completed_at,error_message\n"
+        "f1,libA,brian,RUNNING,2026-04-27T10:00:00+00:00,,\n"
+        "f2,libA,brian,RUN"  # truncated mid-write
+    )
+
+    snapshot = await CSVStatusSource(csv_path).fetch_snapshot()
+    # f1 must be present; f2 is "best effort" — either parsed with garbage state
+    # or missing entirely. We don't assert about f2.
+    assert "f1" in snapshot
+    assert snapshot["f1"]["state"] == "RUNNING"
