@@ -55,3 +55,19 @@ def test_registry_loads_single_valid_schema_file(tmp_path: Path) -> None:
     assert registry.schema_count() == 1
     schema = registry.get_schema("NodeStarted", "1.0")
     assert schema["title"] == "NodeStarted"
+
+
+def test_registry_loads_multiple_schema_files(tmp_path: Path) -> None:
+    """Multiple files in the directory are all loaded."""
+    from lens.events.registry import SchemaRegistry
+
+    _write_schema(tmp_path, "NodeStarted", 1, _minimal_node_started_schema())
+    _write_schema(
+        tmp_path,
+        "NodeCompleted",
+        1,
+        {**_minimal_node_started_schema(), "title": "NodeCompleted"},
+    )
+
+    registry = SchemaRegistry(tmp_path)
+    assert registry.schema_count() == 2
