@@ -549,6 +549,16 @@ def test_flow_completed_serialization_roundtrip() -> None:
     assert reconstructed == original
 
 
+def test_flow_failed_serialization_roundtrip() -> None:
+    from lens.events.schema import FlowFailed
+
+    payload = _valid_flow_failed_input()
+    payload["error_message"] = "boom"
+    original = FlowFailed(**payload)  # type: ignore[arg-type]
+    reconstructed = FlowFailed.model_validate_json(original.model_dump_json())
+    assert reconstructed == original
+
+
 
 
 
