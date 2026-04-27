@@ -12,9 +12,7 @@ from typing import Any
 import pytest
 
 
-def _write_schema(
-    dir_: Path, event_type: str, major: int, schema: dict[str, Any]
-) -> Path:
+def _write_schema(dir_: Path, event_type: str, major: int, schema: dict[str, Any]) -> Path:
     """Write a JSON Schema file using the project's filename convention."""
     snake = "".join("_" + c.lower() if c.isupper() else c for c in event_type).lstrip("_")
     file_ = dir_ / f"{snake}.v{major}.json"
@@ -166,9 +164,12 @@ def registry_with_minimal_schemas(tmp_path: Path) -> Any:
     from lens.events.registry import SchemaRegistry
 
     for event_type, payload in _all_event_types_with_payload():
-        required = ["event_type", "schema_version", "event_id", *(
-            k for k in payload if k not in ("event_type", "schema_version", "event_id")
-        )]
+        required = [
+            "event_type",
+            "schema_version",
+            "event_id",
+            *(k for k in payload if k not in ("event_type", "schema_version", "event_id")),
+        ]
         _write_schema(
             tmp_path,
             event_type,
@@ -457,18 +458,30 @@ def _canonical_payloads() -> list[tuple[str, dict[str, Any]]]:
         NodeStarted,
     )
 
-    common = {
-        "event_id": "550e8400-e29b-41d4-a716-446655440000",
-        "schema_version": "1.0",
-        "timestamp": datetime(2024, 4, 24, 10, 0, 0, tzinfo=UTC),
-        "build_id": "build_42",
-    }
+    eid = "550e8400-e29b-41d4-a716-446655440000"
+    sv = "1.0"
+    ts = datetime(2024, 4, 24, 10, 0, 0, tzinfo=UTC)
+    bid = "build_42"
     pairs: list[tuple[str, Any]] = [
-        ("NodeStarted", NodeStarted(**common, node_id="n", level="flow", entity_id="f")),  # type: ignore[arg-type]
+        (
+            "NodeStarted",
+            NodeStarted(
+                event_id=eid,  # type: ignore[arg-type]
+                schema_version=sv,
+                timestamp=ts,
+                build_id=bid,
+                node_id="n",
+                level="flow",
+                entity_id="f",
+            ),
+        ),
         (
             "NodeCompleted",
-            NodeCompleted(  # type: ignore[arg-type]
-                **common,
+            NodeCompleted(
+                event_id=eid,  # type: ignore[arg-type]
+                schema_version=sv,
+                timestamp=ts,
+                build_id=bid,
                 node_id="n",
                 level="flow",
                 entity_id="f",
@@ -476,14 +489,39 @@ def _canonical_payloads() -> list[tuple[str, dict[str, Any]]]:
                 duration_seconds=1.0,
             ),
         ),
-        ("FlowStarted", FlowStarted(**common, entity_id="f")),  # type: ignore[arg-type]
+        (
+            "FlowStarted",
+            FlowStarted(
+                event_id=eid,  # type: ignore[arg-type]
+                schema_version=sv,
+                timestamp=ts,
+                build_id=bid,
+                entity_id="f",
+            ),
+        ),
         (
             "FlowCompleted",
-            FlowCompleted(**common, entity_id="f", exit_code=0, duration_seconds=1.0),  # type: ignore[arg-type]
+            FlowCompleted(
+                event_id=eid,  # type: ignore[arg-type]
+                schema_version=sv,
+                timestamp=ts,
+                build_id=bid,
+                entity_id="f",
+                exit_code=0,
+                duration_seconds=1.0,
+            ),
         ),
         (
             "FlowFailed",
-            FlowFailed(**common, entity_id="f", exit_code=1, duration_seconds=0.5),  # type: ignore[arg-type]
+            FlowFailed(
+                event_id=eid,  # type: ignore[arg-type]
+                schema_version=sv,
+                timestamp=ts,
+                build_id=bid,
+                entity_id="f",
+                exit_code=1,
+                duration_seconds=0.5,
+            ),
         ),
     ]
     return [(et, json.loads(model.model_dump_json())) for et, model in pairs]
@@ -502,7 +540,3 @@ def test_each_phase0_schema_validates_a_canonical_example_payload(
 
     registry = SchemaRegistry(PROJECT_SCHEMA_DIR)
     registry.validate(payload)
-
-
-
-
