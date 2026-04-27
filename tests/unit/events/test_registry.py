@@ -328,3 +328,31 @@ def test_validate_raises_on_invalid_uuid_format_for_event_id(tmp_path: Path) -> 
     assert "event_id" in str(exc_info.value)
 
 
+def test_validate_raises_on_invalid_level_enum_value(tmp_path: Path) -> None:
+    """level is a closed enum (DP-3); unknown values must be rejected."""
+    from lens.events.exceptions import SchemaValidationError
+    from lens.events.registry import SchemaRegistry
+
+    schema = {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "NodeStarted",
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["event_type", "schema_version", "event_id", "level"],
+        "properties": {
+            "event_type": {"const": "NodeStarted"},
+            "schema_version": {"type": "string", "pattern": r"^\d+\.\d+$"},
+            "event_id": {"type": "string", "format": "uuid"},
+            "level": {"enum": ["build", "library", "flow", "pvt", "cell"]},
+        },
+    }
+    _write_schema(tmp_path, "NodeStarted", 1, schema)
+    registry = SchemaRegistry(tmp_path)
+
+    payload = {**_valid_node_started_payload(), "level": "INVALID"}
+    del payload["node_id"]  # not in this schema's required list
+    with pytest.raises(SchemaValidationError) as exc_info:
+        registry.validate(payload)
+    assert "level" in str(exc_info.value)
+
+
