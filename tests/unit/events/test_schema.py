@@ -631,9 +631,3 @@ def test_serialization_is_deterministic_field_order() -> None:
     a = NodeStarted(**_valid_node_started_input())  # type: ignore[arg-type]
     b = NodeStarted(**_valid_node_started_input())  # type: ignore[arg-type]
     assert a.model_dump_json() == b.model_dump_json()
-
-
-
-
-
-
