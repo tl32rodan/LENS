@@ -167,3 +167,28 @@ def test_envelope_rejects_non_uuid_event_id() -> None:
     assert "event_id" in str(exc_info.value)
 
 
+# ---------------------------------------------------------------------------
+# NodeStarted
+# ---------------------------------------------------------------------------
+
+
+def _valid_node_started_input() -> dict[str, object]:
+    return {
+        **_valid_envelope_input(),
+        "node_id": "node_1",
+        "level": "flow",
+        "entity_id": "drc_flow",
+    }
+
+
+def test_node_started_accepts_valid_input() -> None:
+    """NodeStarted constructs from envelope fields plus node identity."""
+    from lens.events.schema import NodeStarted
+
+    evt = NodeStarted(**_valid_node_started_input())  # type: ignore[arg-type]
+    assert evt.node_id == "node_1"
+    assert evt.level == "flow"
+    assert evt.entity_id == "drc_flow"
+    assert evt.event_type == "NodeStarted"
+
+
