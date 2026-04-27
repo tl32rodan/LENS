@@ -78,3 +78,12 @@ class FlowCompleted(_FlowEventBase):
     event_type: Literal["FlowCompleted"] = "FlowCompleted"
     exit_code: int
     duration_seconds: float = Field(ge=0)
+
+
+class FlowFailed(_FlowEventBase):
+    """A flow has failed. exit_code is loose (Q1); error_message is optional."""
+
+    event_type: Literal["FlowFailed"] = "FlowFailed"
+    exit_code: int
+    duration_seconds: float = Field(ge=0)
+    error_message: str | None = None
