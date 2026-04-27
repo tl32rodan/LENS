@@ -32,7 +32,7 @@ def test_default_settings_can_be_instantiated() -> None:
     assert settings.kafka_bootstrap_servers == ["localhost:9092"]
     assert settings.kafka_topic_events == "build.events"
     assert settings.kafka_topic_dlq == "build.events.dlq"
-    assert settings.api_host == "0.0.0.0"  # noqa: S104 — spec §8.2 default
+    assert settings.api_host == "0.0.0.0"
     assert settings.api_port == 8000
     assert settings.observer_poll_interval_sec == 5.0
     assert settings.observer_csv_path == Path("/data/ap/dashboard.csv")
@@ -77,13 +77,11 @@ def test_env_var_overrides_path_default(monkeypatch: pytest.MonkeyPatch) -> None
     """Path fields accept string env values and parse to Path."""
     from lens.config import Settings
 
-    monkeypatch.setenv("LENS_OBSERVER_CSV_PATH", "/tmp/ap.csv")  # noqa: S108 — test fixture path
-    assert Settings().observer_csv_path == Path("/tmp/ap.csv")  # noqa: S108
+    monkeypatch.setenv("LENS_OBSERVER_CSV_PATH", "/tmp/ap.csv")
+    assert Settings().observer_csv_path == Path("/tmp/ap.csv")
 
 
-def test_settings_loads_from_dotenv_file(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_settings_loads_from_dotenv_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A .env file in cwd is read at construction (pydantic-settings default)."""
     from lens.config import Settings
 
@@ -100,9 +98,7 @@ def test_pg_dsn_validator_accepts_asyncpg_dsn(monkeypatch: pytest.MonkeyPatch) -
     """A correctly-formed asyncpg DSN passes the validator."""
     from lens.config import Settings
 
-    monkeypatch.setenv(
-        "LENS_PG_DSN", "postgresql+asyncpg://user:pass@db.internal:5432/lens"
-    )
+    monkeypatch.setenv("LENS_PG_DSN", "postgresql+asyncpg://user:pass@db.internal:5432/lens")
     settings = Settings()
     assert settings.pg_dsn == "postgresql+asyncpg://user:pass@db.internal:5432/lens"
 

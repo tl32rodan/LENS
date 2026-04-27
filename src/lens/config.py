@@ -29,7 +29,7 @@ class Settings(BaseSettings):
 
     pg_dsn: str = "postgresql+asyncpg://lens:lens@localhost:5432/lens"
 
-    api_host: str = "0.0.0.0"  # noqa: S104 — bind-all in dev; deploy fronted by reverse proxy
+    api_host: str = "0.0.0.0"
     api_port: int = 8000
 
     observer_poll_interval_sec: float = 5.0
@@ -42,8 +42,6 @@ class Settings(BaseSettings):
     def _pg_dsn_must_be_asyncpg(cls, v: str) -> str:
         if not v.startswith("postgresql+asyncpg://"):
             raise ValueError(
-                "pg_dsn must use the asyncpg driver "
-                "(scheme 'postgresql+asyncpg://...'); "
-                f"got {v!r}"
+                f"pg_dsn must use the asyncpg driver (scheme 'postgresql+asyncpg://...'); got {v!r}"
             )
         return v
