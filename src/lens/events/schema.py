@@ -33,3 +33,4 @@ class NodeStarted(EventEnvelope):
     node_id: str
     level: NodeLevel
     entity_id: str
+    input_hash: str | None = None  # Phase 2+ content-addressed cache key
