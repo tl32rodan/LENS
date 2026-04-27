@@ -58,3 +58,16 @@ def test_env_var_overrides_int_default_via_coercion(
 
     monkeypatch.setenv("LENS_API_PORT", "9999")
     assert Settings().api_port == 9999
+
+
+def test_env_var_overrides_list_default_via_json(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """List fields accept JSON-array env values (pydantic-settings convention)."""
+    from lens.config import Settings
+
+    monkeypatch.setenv(
+        "LENS_KAFKA_BOOTSTRAP_SERVERS",
+        '["broker-a:9092", "broker-b:9092"]',
+    )
+    assert Settings().kafka_bootstrap_servers == ["broker-a:9092", "broker-b:9092"]
