@@ -100,3 +100,13 @@ def test_envelope_rejects_schema_version_missing_minor() -> None:
         EventEnvelope(**payload)  # type: ignore[arg-type]
 
 
+def test_envelope_accepts_null_parent_event_id() -> None:
+    """parent_event_id is optional; explicit None must be accepted."""
+    from lens.events.schema import EventEnvelope
+
+    payload = _valid_envelope_input()
+    payload["parent_event_id"] = None
+    env = EventEnvelope(**payload)  # type: ignore[arg-type]
+    assert env.parent_event_id is None
+
+
