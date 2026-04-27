@@ -98,3 +98,16 @@ def test_registry_raises_on_malformed_json_at_construction(tmp_path: Path) -> No
     with pytest.raises(SchemaValidationError) as exc_info:
         SchemaRegistry(tmp_path)
     assert "node_started.v1.json" in str(exc_info.value)
+
+
+def test_registry_raises_when_schema_dir_does_not_exist(tmp_path: Path) -> None:
+    """A non-existent schema directory must raise loud (DP-6), not silently skip."""
+    import pytest
+
+    from lens.events.exceptions import SchemaValidationError
+    from lens.events.registry import SchemaRegistry
+
+    missing = tmp_path / "no_such_dir"
+    with pytest.raises(SchemaValidationError) as exc_info:
+        SchemaRegistry(missing)
+    assert "no_such_dir" in str(exc_info.value)
