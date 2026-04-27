@@ -356,3 +356,21 @@ def test_validate_raises_on_invalid_level_enum_value(tmp_path: Path) -> None:
     assert "level" in str(exc_info.value)
 
 
+def test_validate_error_message_includes_field_path(tmp_path: Path) -> None:
+    """DP-6 specificity: the error must point at the offending field path."""
+    from lens.events.exceptions import SchemaValidationError
+    from lens.events.registry import SchemaRegistry
+
+    _write_schema(tmp_path, "NodeStarted", 1, _minimal_node_started_schema())
+    registry = SchemaRegistry(tmp_path)
+
+    payload = _valid_node_started_payload()
+    payload["node_id"] = 42
+    with pytest.raises(SchemaValidationError) as exc_info:
+        registry.validate(payload)
+    msg = str(exc_info.value)
+    assert "node_id" in msg
+    assert "NodeStarted" in msg
+    assert "1.0" in msg
+
+
