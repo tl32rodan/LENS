@@ -27,3 +27,16 @@ async def test_csv_source_parses_typical_dashboard_file(tmp_path: Path) -> None:
     assert snapshot["f1"]["state"] == "RUNNING"
     assert snapshot["f1"]["library"] == "libA"
     assert snapshot["f2"]["state"] == "COMPLETED"
+
+
+async def test_csv_source_returns_empty_when_file_missing(tmp_path: Path) -> None:
+    """A non-existent CSV yields an empty snapshot rather than raising.
+
+    Rationale: Observer must keep polling even if AP hasn't written its first
+    CSV yet (boot-time race). DP-6 says fail loud, but here "no data" is a
+    legitimate state, not a failure — the bridge keeps trying on next tick.
+    """
+    from lens.observer.ap_bridge import CSVStatusSource
+
+    snapshot = await CSVStatusSource(tmp_path / "missing.csv").fetch_snapshot()
+    assert snapshot == {}
