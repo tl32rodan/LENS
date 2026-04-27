@@ -299,5 +299,32 @@ def test_node_started_rejects_extra_unknown_field() -> None:
     assert "mystery" in str(exc_info.value)
 
 
+# ---------------------------------------------------------------------------
+# NodeCompleted
+# ---------------------------------------------------------------------------
+
+
+def _valid_node_completed_input() -> dict[str, object]:
+    return {
+        **_valid_envelope_input(),
+        "node_id": "node_1",
+        "level": "flow",
+        "entity_id": "drc_flow",
+        "exit_code": 0,
+        "duration_seconds": 120.5,
+    }
+
+
+def test_node_completed_accepts_valid_input() -> None:
+    """NodeCompleted constructs from envelope + node identity + outcome."""
+    from lens.events.schema import NodeCompleted
+
+    evt = NodeCompleted(**_valid_node_completed_input())  # type: ignore[arg-type]
+    assert evt.exit_code == 0
+    assert evt.duration_seconds == 120.5
+    assert evt.event_type == "NodeCompleted"
+    assert evt.output_hash is None
+
+
 
 
