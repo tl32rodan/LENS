@@ -110,3 +110,14 @@ def test_envelope_accepts_null_parent_event_id() -> None:
     assert env.parent_event_id is None
 
 
+def test_envelope_rejects_extra_unknown_field() -> None:
+    """Unknown fields must raise ValidationError (Implementation §2.6, DP-6)."""
+    from lens.events.schema import EventEnvelope
+
+    payload = _valid_envelope_input()
+    payload["unexpected_field"] = "garbage"
+    with pytest.raises(ValidationError) as exc_info:
+        EventEnvelope(**payload)  # type: ignore[arg-type]
+    assert "unexpected_field" in str(exc_info.value)
+
+
