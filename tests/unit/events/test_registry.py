@@ -283,3 +283,18 @@ def test_validate_raises_on_missing_required_field_in_payload(tmp_path: Path) ->
     assert "node_id" in str(exc_info.value)
 
 
+def test_validate_raises_on_extra_unknown_field(tmp_path: Path) -> None:
+    """additionalProperties:false rejects extra fields (mirrors Pydantic 'extra=forbid')."""
+    from lens.events.exceptions import SchemaValidationError
+    from lens.events.registry import SchemaRegistry
+
+    _write_schema(tmp_path, "NodeStarted", 1, _minimal_node_started_schema())
+    registry = SchemaRegistry(tmp_path)
+
+    payload = _valid_node_started_payload()
+    payload["mystery"] = "?"
+    with pytest.raises(SchemaValidationError) as exc_info:
+        registry.validate(payload)
+    assert "mystery" in str(exc_info.value)
+
+
