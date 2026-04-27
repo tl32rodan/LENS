@@ -71,3 +71,16 @@ def test_registry_loads_multiple_schema_files(tmp_path: Path) -> None:
 
     registry = SchemaRegistry(tmp_path)
     assert registry.schema_count() == 2
+
+
+def test_registry_skips_files_not_matching_naming_pattern(tmp_path: Path) -> None:
+    """Files like README.md or `node_started.json` (no v<major>) must be ignored."""
+    from lens.events.registry import SchemaRegistry
+
+    _write_schema(tmp_path, "NodeStarted", 1, _minimal_node_started_schema())
+    (tmp_path / "README.md").write_text("docs go here")
+    (tmp_path / "node_started.json").write_text("{}")  # no version segment
+    (tmp_path / "node_started.v1.txt").write_text("wrong extension")
+
+    registry = SchemaRegistry(tmp_path)
+    assert registry.schema_count() == 1
