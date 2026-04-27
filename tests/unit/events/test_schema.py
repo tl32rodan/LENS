@@ -610,6 +610,20 @@ def test_any_event_rejects_payload_with_extra_field() -> None:
     assert "exit_code" in str(exc_info.value)
 
 
+# ---------------------------------------------------------------------------
+# Determinism / equality
+# ---------------------------------------------------------------------------
+
+
+def test_two_envelopes_with_same_input_are_equal() -> None:
+    """Value equality (idempotent construction) — same input -> equal models."""
+    from lens.events.schema import EventEnvelope
+
+    a = EventEnvelope(**_valid_envelope_input())  # type: ignore[arg-type]
+    b = EventEnvelope(**_valid_envelope_input())  # type: ignore[arg-type]
+    assert a == b
+
+
 
 
 
