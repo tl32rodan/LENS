@@ -583,6 +583,16 @@ def test_any_event_parses_flow_failed_by_event_type() -> None:
     assert evt.exit_code == 1
 
 
+def test_any_event_rejects_unknown_event_type() -> None:
+    """Unknown event_type must raise (DP-6: no silent fallback)."""
+    from lens.events.schema import parse_event
+
+    payload = {**_valid_envelope_input(), "event_type": "MysteriousEvent"}
+    with pytest.raises(ValidationError) as exc_info:
+        parse_event(payload)
+    assert "event_type" in str(exc_info.value)
+
+
 
 
 
