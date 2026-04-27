@@ -45,5 +45,5 @@ class NodeCompleted(EventEnvelope):
     level: NodeLevel
     entity_id: str
     exit_code: int
-    duration_seconds: float
+    duration_seconds: float = Field(ge=0)
     output_hash: str | None = None  # Phase 2+ CAS output key
