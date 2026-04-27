@@ -402,5 +402,17 @@ def test_get_schema_raises_for_unknown_event_type(tmp_path: Path) -> None:
     assert "MysteriousEvent" in str(exc_info.value)
 
 
+def test_get_schema_raises_for_unknown_version(tmp_path: Path) -> None:
+    from lens.events.exceptions import SchemaValidationError
+    from lens.events.registry import SchemaRegistry
+
+    _write_schema(tmp_path, "NodeStarted", 1, _minimal_node_started_schema())
+    registry = SchemaRegistry(tmp_path)
+
+    with pytest.raises(SchemaValidationError) as exc_info:
+        registry.get_schema("NodeStarted", "9.0")
+    assert "9.0" in str(exc_info.value)
+
+
 
 
