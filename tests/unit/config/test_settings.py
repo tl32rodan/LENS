@@ -119,3 +119,16 @@ def test_pg_dsn_validator_rejects_non_asyncpg_dsn(
     with pytest.raises(ValidationError) as exc_info:
         Settings()
     assert "asyncpg" in str(exc_info.value)
+
+
+def test_invalid_pg_dsn_raises_validation_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Per docs/LENS_TEST_REFERENCE.md §6.1 #3 — garbage in, ValidationError out."""
+    from pydantic import ValidationError
+
+    from lens.config import Settings
+
+    monkeypatch.setenv("LENS_PG_DSN", "not a dsn at all")
+    with pytest.raises(ValidationError):
+        Settings()
