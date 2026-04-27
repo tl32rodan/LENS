@@ -390,3 +390,17 @@ def test_get_schema_returns_loaded_dict_for_known_type_and_version(tmp_path: Pat
     assert registry.get_schema("NodeStarted", "1.7") == schema  # any minor of major 1
 
 
+def test_get_schema_raises_for_unknown_event_type(tmp_path: Path) -> None:
+    from lens.events.exceptions import SchemaValidationError
+    from lens.events.registry import SchemaRegistry
+
+    _write_schema(tmp_path, "NodeStarted", 1, _minimal_node_started_schema())
+    registry = SchemaRegistry(tmp_path)
+
+    with pytest.raises(SchemaValidationError) as exc_info:
+        registry.get_schema("MysteriousEvent", "1.0")
+    assert "MysteriousEvent" in str(exc_info.value)
+
+
+
+
