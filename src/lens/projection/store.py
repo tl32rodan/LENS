@@ -44,8 +44,14 @@ class ProjectionStore(Protocol):
 
 @runtime_checkable
 class DashboardStateStore(ProjectionStore, Protocol):
-    """Storage operations for the dashboard_kg_state projection."""
+    """Storage operations for the dashboard_kg_state projection.
 
+    Spec §5.3 enumerates only write operations; the read methods below are an
+    additive extension required by the API layer (§6.3). They do not require
+    an active transaction — concrete adapters take a read snapshot.
+    """
+
+    # writes (spec §5.3) ----------------------------------------------
     async def upsert_kg(self, build_id: str, fields: dict[str, Any]) -> None: ...
 
     async def increment_counter(
@@ -53,3 +59,14 @@ class DashboardStateStore(ProjectionStore, Protocol):
     ) -> None: ...
 
     async def truncate_all(self) -> None: ...
+
+    # reads (additive for L5 API) -------------------------------------
+    async def get_kg(self, build_id: str) -> dict[str, Any] | None: ...
+
+    async def list_kgs(
+        self, *, status: str | None = None, library: str | None = None
+    ) -> list[dict[str, Any]]: ...
+
+    async def list_libraries(self) -> list[dict[str, Any]]: ...
+
+    async def get_library_health(self, library: str) -> list[dict[str, Any]]: ...

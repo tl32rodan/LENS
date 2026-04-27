@@ -81,5 +81,18 @@ def test_dashboard_state_store_runtime_check_accepts_conforming_stub() -> None:
         ) -> None: ...
 
         async def truncate_all(self) -> None: ...
+        async def get_kg(self, build_id: str) -> dict[str, Any] | None:
+            return None
+
+        async def list_kgs(
+            self, *, status: str | None = None, library: str | None = None
+        ) -> list[dict[str, Any]]:
+            return []
+
+        async def list_libraries(self) -> list[dict[str, Any]]:
+            return []
+
+        async def get_library_health(self, library: str) -> list[dict[str, Any]]:
+            return []
 
     assert isinstance(_Stub(), DashboardStateStore)
