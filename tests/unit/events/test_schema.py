@@ -432,5 +432,16 @@ def test_flow_started_accepts_valid_input() -> None:
     assert evt.owner is None
 
 
+def test_flow_started_level_must_be_flow() -> None:
+    """FlowStarted is a level-locked event; non-flow levels are rejected."""
+    from lens.events.schema import FlowStarted
+
+    payload = _valid_flow_started_input()
+    payload["level"] = "pvt"
+    with pytest.raises(ValidationError) as exc_info:
+        FlowStarted(**payload)  # type: ignore[arg-type]
+    assert "level" in str(exc_info.value)
+
+
 
 
