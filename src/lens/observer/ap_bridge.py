@@ -13,8 +13,19 @@ the Protocol, not the parser.
 from __future__ import annotations
 
 import csv
+from collections.abc import Callable
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Protocol
+
+from lens.events.schema import (
+    EventEnvelope,
+    FlowCompleted,
+    FlowFailed,
+    FlowStarted,
+)
+
+_TERMINAL_STATES = frozenset({"COMPLETED", "FAILED"})
 
 
 class APStatusSource(Protocol):
@@ -49,3 +60,71 @@ class CSVStatusSource:
                 for row in reader
                 if row.get("flow_id")
             }
+
+
+def diff_snapshots(
+    old: dict[str, dict[str, Any]],
+    new: dict[str, dict[str, Any]],
+    *,
+    build_id: str,
+    now: datetime,
+    id_gen: Callable[[], str],
+) -> list[EventEnvelope]:
+    """Pure function: compute events that represent the transition `old → new`.
+
+    Phase-0 transition rules:
+        old missing, new=RUNNING            → FlowStarted
+        old=RUNNING, new=COMPLETED          → FlowCompleted
+        old=RUNNING, new=FAILED             → FlowFailed
+        old=RUNNING, new=RUNNING            → (nothing)
+        old terminal (COMPLETED/FAILED)     → (nothing — terminal)
+        old missing, new=COMPLETED/FAILED   → FlowStarted + matching terminal event
+            (catch-up; relies on projection-layer dedup if duplicates)
+    """
+    events: list[EventEnvelope] = []
+    for flow_id, new_state in new.items():
+        old_state = old.get(flow_id)
+        old_status = (old_state or {}).get("state")
+        new_status = new_state.get("state")
+
+        if old_status in _TERMINAL_STATES:
+            continue  # already terminal — never re-emit
+
+        envelope_kwargs: dict[str, Any] = {
+            "schema_version": "1.0",
+            "timestamp": now,
+            "build_id": build_id,
+            "entity_id": flow_id,
+            "library": new_state.get("library"),
+            "owner": new_state.get("owner"),
+        }
+
+        if old_status is None and new_status == "RUNNING":
+            events.append(FlowStarted(event_id=id_gen(), **envelope_kwargs))
+        elif old_status is None and new_status in _TERMINAL_STATES:
+            # catch-up: emit FlowStarted then terminal
+            events.append(FlowStarted(event_id=id_gen(), **envelope_kwargs))
+            events.append(_terminal_event(new_status, new_state, id_gen, envelope_kwargs))
+        elif old_status == "RUNNING" and new_status in _TERMINAL_STATES:
+            events.append(_terminal_event(new_status, new_state, id_gen, envelope_kwargs))
+    return events
+
+
+def _terminal_event(
+    status: str,
+    state: dict[str, Any],
+    id_gen: Callable[[], str],
+    base: dict[str, Any],
+) -> EventEnvelope:
+    extras = {
+        "exit_code": 0 if status == "COMPLETED" else 1,
+        "duration_seconds": 0.0,  # observer doesn't track duration in Phase 0
+    }
+    if status == "COMPLETED":
+        return FlowCompleted(event_id=id_gen(), **base, **extras)
+    return FlowFailed(
+        event_id=id_gen(),
+        **base,
+        **extras,
+        error_message=state.get("error_message"),
+    )
