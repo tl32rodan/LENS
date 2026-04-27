@@ -206,3 +206,22 @@ def test_validate_accepts_payload_with_higher_minor_version(tmp_path: Path) -> N
     payload = _valid_node_started_payload()
     payload["schema_version"] = "1.5"
     registry.validate(payload)  # must not raise
+
+
+# ---------------------------------------------------------------------------
+# validate() — failure paths (DP-6: loud, specific)
+# ---------------------------------------------------------------------------
+
+
+def test_validate_raises_on_missing_event_type_key(tmp_path: Path) -> None:
+    from lens.events.exceptions import SchemaValidationError
+    from lens.events.registry import SchemaRegistry
+
+    _write_schema(tmp_path, "NodeStarted", 1, _minimal_node_started_schema())
+    registry = SchemaRegistry(tmp_path)
+
+    payload = _valid_node_started_payload()
+    del payload["event_type"]
+    with pytest.raises(SchemaValidationError) as exc_info:
+        registry.validate(payload)
+    assert "event_type" in str(exc_info.value)
