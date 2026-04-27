@@ -111,3 +111,27 @@ def test_registry_raises_when_schema_dir_does_not_exist(tmp_path: Path) -> None:
     with pytest.raises(SchemaValidationError) as exc_info:
         SchemaRegistry(missing)
     assert "no_such_dir" in str(exc_info.value)
+
+
+# ---------------------------------------------------------------------------
+# validate() — happy paths
+# ---------------------------------------------------------------------------
+
+
+def _valid_node_started_payload() -> dict[str, Any]:
+    """A dict that satisfies _minimal_node_started_schema()."""
+    return {
+        "event_type": "NodeStarted",
+        "schema_version": "1.0",
+        "event_id": "550e8400-e29b-41d4-a716-446655440000",
+        "node_id": "node_1",
+    }
+
+
+def test_validate_returns_none_for_valid_node_started_payload(tmp_path: Path) -> None:
+    """A payload matching its schema must pass without raising."""
+    from lens.events.registry import SchemaRegistry
+
+    _write_schema(tmp_path, "NodeStarted", 1, _minimal_node_started_schema())
+    registry = SchemaRegistry(tmp_path)
+    assert registry.validate(_valid_node_started_payload()) is None
