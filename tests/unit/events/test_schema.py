@@ -624,6 +624,15 @@ def test_two_envelopes_with_same_input_are_equal() -> None:
     assert a == b
 
 
+def test_serialization_is_deterministic_field_order() -> None:
+    """Two equal NodeStarted instances must serialize byte-identically."""
+    from lens.events.schema import NodeStarted
+
+    a = NodeStarted(**_valid_node_started_input())  # type: ignore[arg-type]
+    b = NodeStarted(**_valid_node_started_input())  # type: ignore[arg-type]
+    assert a.model_dump_json() == b.model_dump_json()
+
+
 
 
 
