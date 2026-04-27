@@ -71,3 +71,11 @@ def test_env_var_overrides_list_default_via_json(
         '["broker-a:9092", "broker-b:9092"]',
     )
     assert Settings().kafka_bootstrap_servers == ["broker-a:9092", "broker-b:9092"]
+
+
+def test_env_var_overrides_path_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Path fields accept string env values and parse to Path."""
+    from lens.config import Settings
+
+    monkeypatch.setenv("LENS_OBSERVER_CSV_PATH", "/tmp/ap.csv")  # noqa: S108 — test fixture path
+    assert Settings().observer_csv_path == Path("/tmp/ap.csv")  # noqa: S108
