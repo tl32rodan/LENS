@@ -2,14 +2,14 @@
 
 **Document Type**: Agent harness / execution contract
 **Audience**: AI agents (primary), human developers (secondary)
-**Pairs With**: `LENS_CHARTER.md` (mandatory) and `LENS_IMPLEMENTATION.md` (optional reference)
+**Pairs With**: `docs/LENS_CHARTER.md` (mandatory) and `docs/LENS_IMPLEMENTATION.md` (optional reference)
 **Authority**: This document is **normative**. When in doubt, this overrides preference, habit, or convenience.
 
 ---
 
 ## 0. How to Read This File
 
-You are an AI agent working on **LENS** — a **L**ayered **E**vent-driven **N**avigation **S**ystem for library build observability and orchestration. This file defines **how you work**. The charter (`LENS_CHARTER.md`) defines **what kind of thing LENS is**, and the implementation reference (`LENS_IMPLEMENTATION.md`) shows one working approach. You need both, but if they conflict, surface the conflict to the human — do not silently choose.
+You are an AI agent working on **LENS** — a **L**ayered **E**vent-driven **N**avigation **S**ystem for library build observability and orchestration. This file defines **how you work**. The charter (`docs/LENS_CHARTER.md`) defines **what kind of thing LENS is**, and the implementation reference (`docs/LENS_IMPLEMENTATION.md`) shows one working approach. You need both, but if they conflict, surface the conflict to the human — do not silently choose.
 
 ### 0.1 Where You Run
 
@@ -18,13 +18,13 @@ You run in an **external development environment with internet access**. Your co
 This means:
 - You MAY use any package on PyPI during development
 - You MAY assume a standard Linux + bash environment for tests, fixtures, and tooling
-- You MUST NOT assume your code runs in the same environment where you developed it (see `LENS_CHARTER.md` §4 DP-8 — Replaceable Adapters)
+- You MUST NOT assume your code runs in the same environment where you developed it (see `docs/LENS_CHARTER.md` §4 DP-8 — Replaceable Adapters)
 - Production environment constraints are **Brian's responsibility at deployment**, not yours during development. You are insulated from them by design (the adapter pattern in DP-8).
 
 ### 0.2 Reading order on a fresh task
 
 1. This file — Section 1 (Inviolable Rules) and Section 2 (Phase Workflow)
-2. `LENS_CHARTER.md` — §4 Design Principles + §3 架構總覽 (mandatory); then `LENS_IMPLEMENTATION.md` for the module relevant to your task (optional)
+2. `docs/LENS_CHARTER.md` — §4 Design Principles + §3 架構總覽 (mandatory); then `docs/LENS_IMPLEMENTATION.md` for the module relevant to your task (optional)
 3. Any additional context the human provides
 
 ### 0.3 Language conventions in this file
@@ -87,7 +87,7 @@ Anything else requires written justification and review.
 
 ### IR-5: Read the Spec Before Writing Code
 
-**You MUST verify the relevant section of `LENS_CHARTER.md` (and optionally `LENS_IMPLEMENTATION.md`) covers your task before producing code.**
+**You MUST verify the relevant section of `docs/LENS_CHARTER.md` (and optionally `docs/LENS_IMPLEMENTATION.md`) covers your task before producing code.**
 
 If the spec does not cover your task, you have one of three situations:
 - The task is configuration / scaffolding outside spec scope → proceed
@@ -141,7 +141,7 @@ Every unit of work flows through three phases. **You MUST explicitly enter and e
 **You MUST produce, in order**:
 
 1. **Restatement**: One paragraph: what this task delivers, what it does NOT deliver, who depends on it.
-2. **Spec Reference**: Cite the section(s) of `LENS_CHARTER.md` (mandatory) or `LENS_IMPLEMENTATION.md` (reference) governing this task.
+2. **Spec Reference**: Cite the section(s) of `docs/LENS_CHARTER.md` (mandatory) or `docs/LENS_IMPLEMENTATION.md` (reference) governing this task.
 3. **Test List**: A numbered list of test cases you will write, each as a one-line description (matches the style in spec's "Test List" subsections). The list MUST cover:
    - Happy path
    - Boundary / edge cases
@@ -229,7 +229,7 @@ Before leaving IMPLEMENT, **you MUST**:
 
 ### Spec adherence
 Cite the spec section(s) governing this work:
-- §X.Y of LENS_CHARTER.md / LENS_IMPLEMENTATION.md
+- §X.Y of docs/LENS_CHARTER.md / docs/LENS_IMPLEMENTATION.md
 
 State any deviation from spec and the justification:
 - (none) OR (deviation + justification)
@@ -368,7 +368,7 @@ This is the explicit list of what you decide vs. what you escalate.
 - **Bypassing the adapter pattern for an external service** (DP-8 in spec; e.g., directly importing a vendor SDK in a module's business logic instead of going through an adapter interface)
 - **Schema changes** (event schema, PostgreSQL schema)
 - **Cross-module contract changes** (anything that requires updating two or more module sections in spec)
-- **Changing a Design Principle** (see LENS_CHARTER.md §4)
+- **Changing a Design Principle** (see docs/LENS_CHARTER.md §4)
 - **Disabling, skipping, or weakening any gate** in §4
 - **Working around an Inviolable Rule** in §1
 
@@ -421,7 +421,7 @@ You MUST NOT silently expand scope. Scope creep without notice is a defect.
 
 ## Appendix A: Portability Notes
 
-You develop in a standard Linux + bash environment with internet access. The production environment is different, but you are insulated from that difference by the adapter pattern (`LENS_CHARTER.md` §4 DP-8). You do not need to know what production looks like.
+You develop in a standard Linux + bash environment with internet access. The production environment is different, but you are insulated from that difference by the adapter pattern (`docs/LENS_CHARTER.md` §4 DP-8). You do not need to know what production looks like.
 
 The only portability rules you MUST follow:
 
@@ -533,7 +533,7 @@ These are patterns you might fall into. They are flagged here so you can self-de
 - **Version**: 1.3
 - **Last Updated**: [date]
 - **Authority**: Brian (lead) + AI agents collaborating
-- **Pairs With**: `LENS_CHARTER.md` v1.0+ (mandatory) and `LENS_IMPLEMENTATION.md` v1.0+ (reference)
+- **Pairs With**: `docs/LENS_CHARTER.md` v1.0+ (mandatory) and `docs/LENS_IMPLEMENTATION.md` v1.0+ (reference)
 - **Conflict Resolution**: This file overrides convenience. Charter overrides this file on platform principles. Implementation Reference is optional — agent may deviate with reasoned justification. Human overrides everything in conscious decisions.
 
 ### Changelog

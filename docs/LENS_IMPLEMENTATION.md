@@ -48,11 +48,11 @@ The Charter defines what LENS is and what it stands for. This document shows **o
 repo-root/
 ├── pyproject.toml              # 單一 pyproject，所有 package 在這
 ├── README.md
+├── CLAUDE.md                   # Agent execution contract（root，第一眼可見）
 ├── docs/
 │   ├── LENS_CHARTER.md         # 核心精神（mandatory read）
 │   ├── LENS_IMPLEMENTATION.md  # 本文件（reference implementation）
 │   ├── LENS_TEST_REFERENCE.md  # test list 參考起點
-│   ├── CLAUDE.md               # Agent execution contract
 │   ├── event_schemas/          # 所有 event schema（版控化）
 │   │   ├── node_started.v1.json
 │   │   ├── node_completed.v1.json
