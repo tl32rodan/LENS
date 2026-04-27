@@ -7,14 +7,14 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class EventEnvelope(BaseModel):
     """Common fields shared by every LENS event."""
 
     event_id: str
-    schema_version: str
+    schema_version: str = Field(pattern=r"^\d+\.\d+$")
     timestamp: datetime
     build_id: str
     parent_event_id: str | None = None
