@@ -455,5 +455,23 @@ def test_flow_started_accepts_optional_library_and_owner() -> None:
     assert evt.owner == "alice"
 
 
+def _valid_flow_completed_input() -> dict[str, object]:
+    return {
+        **_valid_envelope_input(),
+        "entity_id": "drc_flow",
+        "exit_code": 0,
+        "duration_seconds": 90.0,
+    }
+
+
+def test_flow_completed_accepts_valid_input() -> None:
+    from lens.events.schema import FlowCompleted
+
+    evt = FlowCompleted(**_valid_flow_completed_input())  # type: ignore[arg-type]
+    assert evt.exit_code == 0
+    assert evt.duration_seconds == 90.0
+    assert evt.event_type == "FlowCompleted"
+
+
 
 
