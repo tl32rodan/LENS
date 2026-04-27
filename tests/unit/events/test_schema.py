@@ -366,5 +366,15 @@ def test_node_completed_accepts_negative_exit_code() -> None:
     assert evt.exit_code == -9
 
 
+def test_node_completed_accepts_zero_duration() -> None:
+    """Zero-duration completion is valid (boundary; e.g. instant cache hit)."""
+    from lens.events.schema import NodeCompleted
+
+    payload = _valid_node_completed_input()
+    payload["duration_seconds"] = 0.0
+    evt = NodeCompleted(**payload)  # type: ignore[arg-type]
+    assert evt.duration_seconds == 0.0
+
+
 
 
