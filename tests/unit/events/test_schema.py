@@ -90,3 +90,13 @@ def test_envelope_rejects_schema_version_with_v_prefix() -> None:
     assert "schema_version" in str(exc_info.value)
 
 
+def test_envelope_rejects_schema_version_missing_minor() -> None:
+    """`schema_version="1"` (no `.minor`) must be rejected by the regex."""
+    from lens.events.schema import EventEnvelope
+
+    payload = _valid_envelope_input()
+    payload["schema_version"] = "1"
+    with pytest.raises(ValidationError):
+        EventEnvelope(**payload)  # type: ignore[arg-type]
+
+
