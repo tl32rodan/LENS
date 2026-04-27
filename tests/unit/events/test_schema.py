@@ -202,3 +202,13 @@ def test_node_started_requires_node_id() -> None:
     assert "node_id" in str(exc_info.value)
 
 
+def test_node_started_requires_level() -> None:
+    from lens.events.schema import NodeStarted
+
+    payload = _valid_node_started_input()
+    del payload["level"]
+    with pytest.raises(ValidationError) as exc_info:
+        NodeStarted(**payload)  # type: ignore[arg-type]
+    assert "level" in str(exc_info.value)
+
+
