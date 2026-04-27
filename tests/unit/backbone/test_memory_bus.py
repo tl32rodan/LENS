@@ -68,3 +68,53 @@ async def test_producer_send_delivers_event_to_consumer_handler() -> None:
     assert len(received) == 1
     assert received[0]["event_type"] == "NodeStarted"
     assert received[0]["node_id"] == "n1"
+
+
+async def _drain_until(
+    consumer: Any, predicate: Any, *, max_iters: int = 50, sleep: float = 0.01
+) -> None:
+    """Run a consumer until `predicate()` is truthy, then stop it cleanly."""
+    run_task = asyncio.create_task(consumer.run())
+    try:
+        for _ in range(max_iters):
+            if predicate():
+                break
+            await asyncio.sleep(sleep)
+    finally:
+        await consumer.stop()
+        await run_task
+
+
+async def test_two_consumers_on_same_topic_both_receive_events() -> None:
+    """Fan-out semantics: every consumer registered on the topic sees every event."""
+    from lens.backbone.memory_bus import InMemoryEventBus
+
+    bus = InMemoryEventBus()
+    a: list[dict[str, Any]] = []
+    b: list[dict[str, Any]] = []
+
+    class _Recorder:
+        def __init__(self, bucket: list[dict[str, Any]]) -> None:
+            self.bucket = bucket
+
+        async def handle(self, event: dict[str, Any]) -> None:
+            self.bucket.append(event)
+
+    consumer_a = bus.consumer("topic", group_id="ga", handler=_Recorder(a))
+    consumer_b = bus.consumer("topic", group_id="gb", handler=_Recorder(b))
+    producer = bus.producer("topic")
+    await producer.send(_sample_event())
+
+    run_a = asyncio.create_task(consumer_a.run())
+    run_b = asyncio.create_task(consumer_b.run())
+    for _ in range(50):
+        if a and b:
+            break
+        await asyncio.sleep(0.01)
+    await consumer_a.stop()
+    await consumer_b.stop()
+    await run_a
+    await run_b
+
+    assert len(a) == 1
+    assert len(b) == 1
