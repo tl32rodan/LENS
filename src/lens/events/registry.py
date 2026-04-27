@@ -10,7 +10,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-import jsonschema
+import jsonschema  # type: ignore[import-untyped]
 
 from lens.events.exceptions import SchemaValidationError
 

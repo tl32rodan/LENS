@@ -134,4 +134,4 @@ def test_validate_returns_none_for_valid_node_started_payload(tmp_path: Path) ->
 
     _write_schema(tmp_path, "NodeStarted", 1, _minimal_node_started_schema())
     registry = SchemaRegistry(tmp_path)
-    assert registry.validate(_valid_node_started_payload()) is None
+    registry.validate(_valid_node_started_payload())  # must not raise
