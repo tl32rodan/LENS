@@ -153,3 +153,14 @@ def test_envelope_rejects_naive_timestamp() -> None:
     assert "timestamp" in str(exc_info.value)
 
 
+def test_envelope_rejects_non_uuid_event_id() -> None:
+    """event_id is a UUID v4 (Implementation §2.3); reject malformed values (DP-6)."""
+    from lens.events.schema import EventEnvelope
+
+    payload = _valid_envelope_input()
+    payload["event_id"] = "not-a-uuid"
+    with pytest.raises(ValidationError) as exc_info:
+        EventEnvelope(**payload)  # type: ignore[arg-type]
+    assert "event_id" in str(exc_info.value)
+
+
