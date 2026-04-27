@@ -7,11 +7,13 @@ readme = "README.md"
 license = { file = "LICENSE" }
 dependencies = [
     "aiokafka>=0.11",
+    "asyncpg>=0.29",
     "fastapi>=0.115",
     "httpx>=0.27",
     "jsonschema>=4.0",
     "pydantic>=2.7",
     "pydantic-settings>=2.4",
+    "sqlalchemy[asyncio]>=2.0",
 ]
 
 [project.optional-dependencies]
@@ -79,6 +81,7 @@ source = ["src/lens"]
 branch = true
 omit = [
     "src/lens/backbone/kafka_bus.py",  # aiokafka wrappers — integration-tested only
+    "src/lens/projection/postgres_adapter.py",  # asyncpg+SA wrappers — integration-tested only
 ]
 
 [tool.coverage.report]
