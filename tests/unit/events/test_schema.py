@@ -494,6 +494,24 @@ def test_flow_completed_requires_duration_seconds() -> None:
     assert "duration_seconds" in str(exc_info.value)
 
 
+def _valid_flow_failed_input() -> dict[str, object]:
+    return {
+        **_valid_envelope_input(),
+        "entity_id": "drc_flow",
+        "exit_code": 1,
+        "duration_seconds": 30.0,
+    }
+
+
+def test_flow_failed_accepts_valid_input() -> None:
+    from lens.events.schema import FlowFailed
+
+    evt = FlowFailed(**_valid_flow_failed_input())  # type: ignore[arg-type]
+    assert evt.exit_code == 1
+    assert evt.event_type == "FlowFailed"
+    assert evt.error_message is None
+
+
 
 
 
