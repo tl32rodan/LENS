@@ -5,8 +5,6 @@ Per docs/LENS_CHARTER.md DP-3, DP-6 and docs/LENS_IMPLEMENTATION.md §2.
 
 from __future__ import annotations
 
-from datetime import datetime
-
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 
