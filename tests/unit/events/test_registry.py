@@ -193,3 +193,16 @@ def test_validate_accepts_each_of_the_five_event_types(
 ) -> None:
     """Every Phase-0 event type can pass validation given a matching schema."""
     registry_with_minimal_schemas.validate(payload)
+
+
+def test_validate_accepts_payload_with_higher_minor_version(tmp_path: Path) -> None:
+    """A payload claiming version 1.5 still validates against the v1 file
+    (additive evolution per docs/LENS_IMPLEMENTATION.md §2.1)."""
+    from lens.events.registry import SchemaRegistry
+
+    _write_schema(tmp_path, "NodeStarted", 1, _minimal_node_started_schema())
+    registry = SchemaRegistry(tmp_path)
+
+    payload = _valid_node_started_payload()
+    payload["schema_version"] = "1.5"
+    registry.validate(payload)  # must not raise
