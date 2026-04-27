@@ -346,5 +346,15 @@ def test_node_completed_requires_duration_seconds() -> None:
     assert "duration_seconds" in str(exc_info.value)
 
 
+def test_node_completed_accepts_zero_exit_code() -> None:
+    """exit_code=0 is the success case (boundary)."""
+    from lens.events.schema import NodeCompleted
+
+    payload = _valid_node_completed_input()
+    payload["exit_code"] = 0
+    evt = NodeCompleted(**payload)  # type: ignore[arg-type]
+    assert evt.exit_code == 0
+
+
 
 
