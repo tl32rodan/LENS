@@ -14,8 +14,6 @@ import asyncio
 from datetime import UTC, datetime
 from typing import Any
 
-import pytest
-
 from lens.events.schema import NodeStarted
 
 
@@ -141,3 +139,66 @@ async def test_event_on_topic_a_does_not_reach_consumer_of_topic_b() -> None:
     await run_task
 
     assert received_b == []
+
+
+async def test_handler_exception_does_not_crash_consumer_loop() -> None:
+    """Per spec §2.1 #3: a handler that raises must not kill the consumer loop."""
+    from lens.backbone.memory_bus import InMemoryEventBus
+
+    bus = InMemoryEventBus()
+    successes: list[dict[str, Any]] = []
+
+    class _FlakyHandler:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        async def handle(self, event: dict[str, Any]) -> None:
+            self.calls += 1
+            if self.calls == 1:
+                raise RuntimeError("boom on first event")
+            successes.append(event)
+
+    handler = _FlakyHandler()
+    consumer = bus.consumer("topic", group_id="g", handler=handler)
+    producer = bus.producer("topic")
+    await producer.send(_sample_event())
+    await producer.send(_sample_event())
+
+    run_task = asyncio.create_task(consumer.run())
+    for _ in range(50):
+        if successes:
+            break
+        await asyncio.sleep(0.01)
+    await consumer.stop()
+    await run_task
+
+    assert handler.calls == 2  # the loop survived the first failure
+    assert len(successes) == 1  # only the second event made it through
+
+
+async def test_consumer_stop_causes_run_to_return() -> None:
+    """Calling stop() on an idle consumer makes run() return promptly."""
+    from lens.backbone.memory_bus import InMemoryEventBus
+
+    bus = InMemoryEventBus()
+
+    class _Noop:
+        async def handle(self, event: dict[str, Any]) -> None: ...
+
+    consumer = bus.consumer("topic", group_id="g", handler=_Noop())
+    run_task = asyncio.create_task(consumer.run())
+    await asyncio.sleep(0.02)
+    await consumer.stop()
+    await asyncio.wait_for(run_task, timeout=0.5)  # must return, not hang
+
+
+async def test_producer_start_and_stop_are_callable_noops() -> None:
+    """Lifecycle methods exist and can be called without state setup."""
+    from lens.backbone.memory_bus import InMemoryEventBus
+
+    bus = InMemoryEventBus()
+    producer = bus.producer("topic")
+    await producer.start()
+    await producer.start()  # idempotent
+    await producer.stop()
+    await producer.stop()

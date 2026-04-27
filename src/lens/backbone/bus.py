@@ -41,9 +41,7 @@ class EventConsumer(Protocol):
 class EventBus(Protocol):
     """Factory for producers and consumers; hides Kafka-specific concepts."""
 
-    def producer(
-        self, topic: str, *, local_buffer_path: Path | None = None
-    ) -> EventProducer: ...
+    def producer(self, topic: str, *, local_buffer_path: Path | None = None) -> EventProducer: ...
 
     def consumer(
         self,

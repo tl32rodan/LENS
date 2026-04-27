@@ -73,9 +73,7 @@ def test_event_bus_runtime_check_accepts_conforming_stub() -> None:
     from lens.backbone.bus import EventBus, EventConsumer, EventHandler, EventProducer
 
     class _Stub:
-        def producer(
-            self, topic: str, *, local_buffer_path: Path | None = None
-        ) -> EventProducer:
+        def producer(self, topic: str, *, local_buffer_path: Path | None = None) -> EventProducer:
             return cast(EventProducer, object())
 
         def consumer(

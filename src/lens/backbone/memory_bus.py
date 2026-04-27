@@ -15,7 +15,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from lens.backbone.bus import EventBus, EventConsumer, EventHandler, EventProducer
+from lens.backbone.bus import EventConsumer, EventHandler, EventProducer
 from lens.events.schema import EventEnvelope
 
 logger = logging.getLogger(__name__)
@@ -42,9 +42,7 @@ class _InMemoryProducer:
 class _InMemoryConsumer:
     """Pulls events off its private queue and dispatches to a handler."""
 
-    def __init__(
-        self, queue: asyncio.Queue[dict[str, Any]], handler: EventHandler
-    ) -> None:
+    def __init__(self, queue: asyncio.Queue[dict[str, Any]], handler: EventHandler) -> None:
         self._queue = queue
         self._handler = handler
         self._stopped = asyncio.Event()
@@ -58,9 +56,7 @@ class _InMemoryConsumer:
             try:
                 await self._handler.handle(event)
             except Exception:
-                logger.exception(
-                    "in-memory consumer handler raised; continuing loop"
-                )
+                logger.exception("in-memory consumer handler raised; continuing loop")
 
     async def stop(self) -> None:
         self._stopped.set()
@@ -72,9 +68,7 @@ class InMemoryEventBus:
     def __init__(self) -> None:
         self._consumer_queues: dict[str, list[asyncio.Queue[dict[str, Any]]]] = {}
 
-    def producer(
-        self, topic: str, *, local_buffer_path: Path | None = None
-    ) -> EventProducer:
+    def producer(self, topic: str, *, local_buffer_path: Path | None = None) -> EventProducer:
         # local_buffer_path is irrelevant in-memory; accepted for Protocol parity.
         del local_buffer_path
         queues = self._consumer_queues.setdefault(topic, [])
