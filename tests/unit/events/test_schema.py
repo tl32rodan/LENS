@@ -326,5 +326,15 @@ def test_node_completed_accepts_valid_input() -> None:
     assert evt.output_hash is None
 
 
+def test_node_completed_requires_exit_code() -> None:
+    from lens.events.schema import NodeCompleted
+
+    payload = _valid_node_completed_input()
+    del payload["exit_code"]
+    with pytest.raises(ValidationError) as exc_info:
+        NodeCompleted(**payload)  # type: ignore[arg-type]
+    assert "exit_code" in str(exc_info.value)
+
+
 
 
