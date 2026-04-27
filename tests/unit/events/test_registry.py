@@ -298,3 +298,18 @@ def test_validate_raises_on_extra_unknown_field(tmp_path: Path) -> None:
     assert "mystery" in str(exc_info.value)
 
 
+def test_validate_raises_on_wrong_type_for_field(tmp_path: Path) -> None:
+    """Wrong-typed field values must be rejected (DP-6)."""
+    from lens.events.exceptions import SchemaValidationError
+    from lens.events.registry import SchemaRegistry
+
+    _write_schema(tmp_path, "NodeStarted", 1, _minimal_node_started_schema())
+    registry = SchemaRegistry(tmp_path)
+
+    payload = _valid_node_started_payload()
+    payload["node_id"] = 42  # schema requires string
+    with pytest.raises(SchemaValidationError) as exc_info:
+        registry.validate(payload)
+    assert "node_id" in str(exc_info.value)
+
+
