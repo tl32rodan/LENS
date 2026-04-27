@@ -313,3 +313,24 @@ def test_validate_raises_on_wrong_type_for_field(tmp_path: Path) -> None:
     assert "node_id" in str(exc_info.value)
 
 
+def test_validate_raises_on_invalid_uuid_format_for_event_id(tmp_path: Path) -> None:
+    """The schema declares format:uuid; non-UUID strings must fail."""
+    import jsonschema  # type: ignore[import-untyped]
+
+    from lens.events.exceptions import SchemaValidationError
+    from lens.events.registry import SchemaRegistry
+
+    _write_schema(tmp_path, "NodeStarted", 1, _minimal_node_started_schema())
+    registry = SchemaRegistry(tmp_path)
+
+    payload = _valid_node_started_payload()
+    payload["event_id"] = "not-a-uuid"
+    # Default jsonschema validator only enforces 'format' when format-checker is on.
+    # Registry must opt-in to format checking for this to be loud (DP-6).
+    with pytest.raises(SchemaValidationError) as exc_info:
+        registry.validate(payload)
+    assert "event_id" in str(exc_info.value)
+    # noqa: jsonschema imported only to ensure module is on path for the try-block above
+    _ = jsonschema
+
+
