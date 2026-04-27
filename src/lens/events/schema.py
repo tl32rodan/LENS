@@ -5,10 +5,10 @@ Per docs/LENS_CHARTER.md DP-3, DP-6 and docs/LENS_IMPLEMENTATION.md §2.
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, TypeAdapter
 
 NodeLevel = Literal["build", "library", "flow", "pvt", "cell"]
 """Granularity level — DP-3: data, not schema."""
@@ -87,3 +87,22 @@ class FlowFailed(_FlowEventBase):
     exit_code: int
     duration_seconds: float = Field(ge=0)
     error_message: str | None = None
+
+
+AnyEvent = Annotated[
+    NodeStarted | NodeCompleted | FlowStarted | FlowCompleted | FlowFailed,
+    Field(discriminator="event_type"),
+]
+"""Polymorphic event union — used by Backbone consumers to decode payloads."""
+
+_ANY_EVENT_ADAPTER: TypeAdapter[Any] = TypeAdapter(AnyEvent)
+
+
+def parse_event(payload: dict[str, Any]) -> AnyEvent:
+    """Decode a raw event dict to the matching concrete model.
+
+    Dispatches on the `event_type` discriminator. Raises pydantic
+    ValidationError on unknown event_type or payload that does not satisfy
+    the matched model's contract (DP-6).
+    """
+    return _ANY_EVENT_ADAPTER.validate_python(payload)  # type: ignore[no-any-return]
