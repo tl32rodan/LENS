@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -35,3 +36,14 @@ class Settings(BaseSettings):
     observer_csv_path: Path = Path("/data/ap/dashboard.csv")
 
     log_level: str = "INFO"
+
+    @field_validator("pg_dsn")
+    @classmethod
+    def _pg_dsn_must_be_asyncpg(cls, v: str) -> str:
+        if not v.startswith("postgresql+asyncpg://"):
+            raise ValueError(
+                "pg_dsn must use the asyncpg driver "
+                "(scheme 'postgresql+asyncpg://...'); "
+                f"got {v!r}"
+            )
+        return v
