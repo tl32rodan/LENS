@@ -512,6 +512,16 @@ def test_flow_failed_accepts_valid_input() -> None:
     assert evt.error_message is None
 
 
+def test_flow_failed_carries_optional_error_message() -> None:
+    from lens.events.schema import FlowFailed
+
+    payload = _valid_flow_failed_input()
+    payload["error_message"] = "tool exited with code 1: drc clean check failed"
+    evt = FlowFailed(**payload)  # type: ignore[arg-type]
+    assert evt.error_message is not None
+    assert "drc clean check" in evt.error_message
+
+
 
 
 
