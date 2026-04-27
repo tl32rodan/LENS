@@ -559,6 +559,21 @@ def test_flow_failed_serialization_roundtrip() -> None:
     assert reconstructed == original
 
 
+# ---------------------------------------------------------------------------
+# AnyEvent — discriminated union for polymorphic decode
+# ---------------------------------------------------------------------------
+
+
+def test_any_event_parses_node_started_by_event_type() -> None:
+    """AnyEvent dispatches on event_type to the right concrete model."""
+    from lens.events.schema import NodeStarted, parse_event
+
+    payload = {**_valid_node_started_input(), "event_type": "NodeStarted"}
+    evt = parse_event(payload)
+    assert isinstance(evt, NodeStarted)
+    assert evt.entity_id == "drc_flow"
+
+
 
 
 
