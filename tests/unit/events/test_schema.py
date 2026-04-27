@@ -533,6 +533,14 @@ def test_flow_failed_accepts_any_exit_code(exit_code: int) -> None:
     assert evt.exit_code == exit_code
 
 
+def test_flow_started_serialization_roundtrip() -> None:
+    from lens.events.schema import FlowStarted
+
+    original = FlowStarted(**_valid_flow_started_input())  # type: ignore[arg-type]
+    reconstructed = FlowStarted.model_validate_json(original.model_dump_json())
+    assert reconstructed == original
+
+
 
 
 
