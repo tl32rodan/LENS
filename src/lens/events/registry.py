@@ -24,6 +24,10 @@ class SchemaRegistry:
 
     def __init__(self, schema_dir: Path) -> None:
         self._schemas: dict[tuple[str, int], dict[str, Any]] = {}
+        if not schema_dir.is_dir():
+            raise SchemaValidationError(
+                f"schema_dir does not exist or is not a directory: {schema_dir}"
+            )
         for path in sorted(schema_dir.iterdir()):
             match = _FILENAME_PATTERN.match(path.name)
             if match is None:
