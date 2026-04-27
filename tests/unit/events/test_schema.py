@@ -192,3 +192,13 @@ def test_node_started_accepts_valid_input() -> None:
     assert evt.event_type == "NodeStarted"
 
 
+def test_node_started_requires_node_id() -> None:
+    from lens.events.schema import NodeStarted
+
+    payload = _valid_node_started_input()
+    del payload["node_id"]
+    with pytest.raises(ValidationError) as exc_info:
+        NodeStarted(**payload)  # type: ignore[arg-type]
+    assert "node_id" in str(exc_info.value)
+
+
