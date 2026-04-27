@@ -374,3 +374,19 @@ def test_validate_error_message_includes_field_path(tmp_path: Path) -> None:
     assert "1.0" in msg
 
 
+# ---------------------------------------------------------------------------
+# get_schema()
+# ---------------------------------------------------------------------------
+
+
+def test_get_schema_returns_loaded_dict_for_known_type_and_version(tmp_path: Path) -> None:
+    from lens.events.registry import SchemaRegistry
+
+    schema = _minimal_node_started_schema()
+    _write_schema(tmp_path, "NodeStarted", 1, schema)
+
+    registry = SchemaRegistry(tmp_path)
+    assert registry.get_schema("NodeStarted", "1.0") == schema
+    assert registry.get_schema("NodeStarted", "1.7") == schema  # any minor of major 1
+
+
