@@ -34,3 +34,4 @@ class NodeStarted(EventEnvelope):
     level: NodeLevel
     entity_id: str
     input_hash: str | None = None  # Phase 2+ content-addressed cache key
+    resource_request: dict[str, int] | None = None  # Phase 2+ scheduling hint
