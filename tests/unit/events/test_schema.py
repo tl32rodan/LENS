@@ -55,3 +55,25 @@ def test_envelope_requires_schema_version() -> None:
     with pytest.raises(ValidationError) as exc_info:
         EventEnvelope(**payload)  # type: ignore[arg-type]
     assert "schema_version" in str(exc_info.value)
+
+
+def test_envelope_requires_timestamp() -> None:
+    """Missing timestamp must raise ValidationError (DP-6)."""
+    from lens.events.schema import EventEnvelope
+
+    payload = _valid_envelope_input()
+    del payload["timestamp"]
+    with pytest.raises(ValidationError) as exc_info:
+        EventEnvelope(**payload)  # type: ignore[arg-type]
+    assert "timestamp" in str(exc_info.value)
+
+
+def test_envelope_requires_build_id() -> None:
+    """Missing build_id must raise ValidationError (DP-6)."""
+    from lens.events.schema import EventEnvelope
+
+    payload = _valid_envelope_input()
+    del payload["build_id"]
+    with pytest.raises(ValidationError) as exc_info:
+        EventEnvelope(**payload)  # type: ignore[arg-type]
+    assert "build_id" in str(exc_info.value)
