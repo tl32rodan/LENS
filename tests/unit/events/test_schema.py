@@ -278,3 +278,15 @@ def test_node_started_resource_request_accepts_int_dict() -> None:
     assert evt.resource_request == {"cpu": 4, "memory_gb": 16}
 
 
+def test_node_started_serialization_roundtrip() -> None:
+    """model -> JSON -> model must reconstruct an equal value."""
+    from lens.events.schema import NodeStarted
+
+    original = NodeStarted(**_valid_node_started_input())  # type: ignore[arg-type]
+    payload = original.model_dump_json()
+    reconstructed = NodeStarted.model_validate_json(payload)
+    assert reconstructed == original
+
+
+
+
