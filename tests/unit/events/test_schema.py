@@ -255,3 +255,16 @@ def test_node_started_event_type_field_is_literal() -> None:
     assert "event_type" in str(exc_info.value)
 
 
+def test_node_started_input_hash_is_optional() -> None:
+    """input_hash is a Phase 2+ field; absence and explicit None must both work."""
+    from lens.events.schema import NodeStarted
+
+    evt_default = NodeStarted(**_valid_node_started_input())  # type: ignore[arg-type]
+    assert evt_default.input_hash is None
+
+    payload = _valid_node_started_input()
+    payload["input_hash"] = "sha256:abc"
+    evt_set = NodeStarted(**payload)  # type: ignore[arg-type]
+    assert evt_set.input_hash == "sha256:abc"
+
+
