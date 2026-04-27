@@ -400,5 +400,14 @@ def test_node_completed_output_hash_is_optional() -> None:
     assert evt_set.output_hash == "sha256:def"
 
 
+def test_node_completed_serialization_roundtrip() -> None:
+    from lens.events.schema import NodeCompleted
+
+    original = NodeCompleted(**_valid_node_completed_input())  # type: ignore[arg-type]
+    payload = original.model_dump_json()
+    reconstructed = NodeCompleted.model_validate_json(payload)
+    assert reconstructed == original
+
+
 
 
