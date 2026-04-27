@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 
 class EventEnvelope(BaseModel):
@@ -17,6 +17,6 @@ class EventEnvelope(BaseModel):
 
     event_id: str
     schema_version: str = Field(pattern=r"^\d+\.\d+$")
-    timestamp: datetime
+    timestamp: AwareDatetime
     build_id: str
     parent_event_id: str | None = None
