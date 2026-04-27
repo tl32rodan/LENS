@@ -68,3 +68,13 @@ class FlowStarted(_FlowEventBase):
     """A flow has begun execution."""
 
     event_type: Literal["FlowStarted"] = "FlowStarted"
+
+
+class FlowCompleted(_FlowEventBase):
+    """A flow has finished. Per decision Q1, exit_code is loose at schema level;
+    success/failure interpretation is the projection layer's job.
+    """
+
+    event_type: Literal["FlowCompleted"] = "FlowCompleted"
+    exit_code: int
+    duration_seconds: float = Field(ge=0)
