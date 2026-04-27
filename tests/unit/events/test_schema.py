@@ -132,3 +132,13 @@ def test_envelope_parses_iso8601_timestamp_with_z() -> None:
     assert env.timestamp.utcoffset() == timedelta(0)
 
 
+def test_envelope_parses_iso8601_timestamp_with_offset() -> None:
+    """Numeric tz offset (e.g., `+08:00`) must parse with that offset."""
+    from lens.events.schema import EventEnvelope
+
+    payload = _valid_envelope_input()
+    payload["timestamp"] = "2024-04-24T18:00:00+08:00"
+    env = EventEnvelope(**payload)  # type: ignore[arg-type]
+    assert env.timestamp.utcoffset() == timedelta(hours=8)
+
+
