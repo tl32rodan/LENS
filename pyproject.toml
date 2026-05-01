@@ -6,9 +6,15 @@ build-backend = "setuptools.build_meta"
 name = "lens"
 version = "0.1.0"
 requires-python = ">=3.12"
+dependencies = []
 
 [tool.ruff]
 line-length = 100
+target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "I"]
+select = ["E", "F", "I", "B", "UP", "N"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
