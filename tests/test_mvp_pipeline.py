@@ -2,6 +2,7 @@ import unittest
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
+import lens
 from lens.api import get_build_summary
 from lens.events import EventEnvelope, NodeCompleted, NodeStarted, SchemaRegistry
 from lens.observer import Observer
@@ -104,6 +105,16 @@ class TestMVPPipeline(unittest.TestCase):
                         node_id="node-a",
                         entity_id="flow-1",
                     )
+
+    def test_package_module_has_docstring(self) -> None:
+        self.assertIn("LENS", lens.__doc__ or "")
+
+    def test_summary_returns_copy_not_live_reference(self) -> None:
+        projection = BuildProjection()
+        projection.apply(self._node_started("evt-copy"))
+        snapshot = projection.summary("build-1")
+        snapshot["started"] = 999
+        self.assertEqual(projection.summary("build-1")["started"], 1)
 
     def test_schema_registry_accepts_known_events(self) -> None:
         registry = SchemaRegistry()
